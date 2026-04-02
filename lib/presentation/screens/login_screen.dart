@@ -10,6 +10,7 @@ import '../providers/database_provider.dart';
 import 'home_screen.dart';
 import 'admin/admin_panel_screen.dart';
 import 'kitchen/kitchen_screen.dart';
+import 'menu_board_screen.dart';
 import 'order_display_screen.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -209,6 +210,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 },
                 child: Text(
                   'Pantalla de pedidos',
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: AppColors.textSecondary,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(
+                      builder: (_) => const MenuBoardScreen(),
+                    ),
+                  );
+                },
+                child: Text(
+                  'Menu / Ofertas',
                   style: AppTypography.bodyMedium.copyWith(
                     color: AppColors.textSecondary,
                     fontSize: 16,
