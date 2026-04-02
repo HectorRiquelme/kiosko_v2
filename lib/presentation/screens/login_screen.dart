@@ -22,6 +22,32 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _error = false;
   bool _loading = false;
 
+  @override
+  void initState() {
+    super.initState();
+    _tryRestoreSession();
+  }
+
+  Future<void> _tryRestoreSession() async {
+    final restored = await ref.read(authProvider.notifier).restoreSession();
+    if (!restored || !mounted) return;
+
+    final user = ref.read(authProvider);
+    if (user == null) return;
+
+    final Widget destination;
+    switch (user.role) {
+      case UserRole.admin:
+        destination = const AdminPanelScreen();
+      case UserRole.worker:
+        destination = const KitchenScreen();
+    }
+
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => destination),
+    );
+  }
+
   void _onDigit(String digit) {
     if (_pin.length >= 4) return;
     setState(() {

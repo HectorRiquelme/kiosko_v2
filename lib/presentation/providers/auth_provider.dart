@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../data/repositories/auth_repository_impl.dart';
+import '../../data/services/session_manager.dart';
 import 'database_provider.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
@@ -20,11 +21,31 @@ class AuthNotifier extends StateNotifier<AppUser?> {
   Future<bool> login(String pin) async {
     final user = await _repo.authenticateByPin(pin);
     state = user;
+    if (user != null) {
+      await SessionManager.saveSession(user.id);
+    }
     return user != null;
   }
 
-  void logout() {
+  Future<void> logout() async {
     state = null;
+    await SessionManager.clearSession();
+  }
+
+  /// Try to restore session from saved preferences
+  Future<bool> restoreSession() async {
+    final userId = await SessionManager.getSession();
+    if (userId == null) return false;
+
+    final users = await _repo.getAllUsers();
+    final match = users.where((u) => u.id == userId);
+    if (match.isEmpty) {
+      await SessionManager.clearSession();
+      return false;
+    }
+
+    state = match.first;
+    return true;
   }
 }
 

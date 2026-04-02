@@ -6,4 +6,5 @@ abstract class AuthRepository {
   Future<void> createUser(AppUser user);
   Future<void> updateUser(AppUser user);
   Future<void> deleteUser(String id);
+  Future<bool> isPinAvailable(String pin, {String? excludeUserId});
 }

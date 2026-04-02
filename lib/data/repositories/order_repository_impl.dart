@@ -76,8 +76,14 @@ class OrderRepositoryImpl implements OrderRepository {
 
   @override
   Future<int> getNextQueueNumber() async {
+    // Reset queue number daily — only count today's orders
+    final today = DateTime.now();
+    final startOfDay = DateTime(today.year, today.month, today.day);
+    final startEpoch = startOfDay.millisecondsSinceEpoch ~/ 1000;
     final result = await _db.customSelect(
-      'SELECT COALESCE(MAX(queue_number), 0) + 1 AS next FROM orders',
+      'SELECT COALESCE(MAX(queue_number), 0) + 1 AS next FROM orders '
+      'WHERE created_at >= ?',
+      variables: [Variable.withInt(startEpoch)],
     ).getSingle();
     return result.read<int>('next');
   }

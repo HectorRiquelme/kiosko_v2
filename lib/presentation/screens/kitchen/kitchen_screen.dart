@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_colors.dart';
@@ -24,11 +26,12 @@ class KitchenScreen extends ConsumerStatefulWidget {
 
 class _KitchenScreenState extends ConsumerState<KitchenScreen> {
   Timer? _refreshTimer;
+  int _lastPendingCount = 0;
+  final AudioPlayer _audioPlayer = AudioPlayer();
 
   @override
   void initState() {
     super.initState();
-    // Auto-refresh every 5 seconds for new orders
     _refreshTimer = Timer.periodic(const Duration(seconds: 5), (_) {
       ref.invalidate(kitchenOrdersProvider);
     });
@@ -37,7 +40,27 @@ class _KitchenScreenState extends ConsumerState<KitchenScreen> {
   @override
   void dispose() {
     _refreshTimer?.cancel();
+    _audioPlayer.dispose();
     super.dispose();
+  }
+
+  void _checkForNewOrders(List<Order> allOrders) {
+    final pendingCount =
+        allOrders.where((o) => o.status == OrderStatus.pending).length;
+    if (pendingCount > _lastPendingCount && _lastPendingCount >= 0) {
+      _notifyNewOrder();
+    }
+    _lastPendingCount = pendingCount;
+  }
+
+  Future<void> _notifyNewOrder() async {
+    // Haptic feedback
+    HapticFeedback.heavyImpact();
+    // System notification sound
+    await _audioPlayer.play(AssetSource('sounds/new_order.mp3')).catchError((_) {
+      // If asset not found, use a system sound via short vibration pattern
+      HapticFeedback.vibrate();
+    });
   }
 
   @override
@@ -60,8 +83,9 @@ class _KitchenScreenState extends ConsumerState<KitchenScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () {
-              ref.read(authProvider.notifier).logout();
+            onPressed: () async {
+              await ref.read(authProvider.notifier).logout();
+              if (!context.mounted) return;
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(builder: (_) => const LoginScreen()),
                 (route) => false,
@@ -72,6 +96,11 @@ class _KitchenScreenState extends ConsumerState<KitchenScreen> {
       ),
       body: ordersAsync.when(
         data: (allOrders) {
+          // Check for new orders and notify
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _checkForNewOrders(allOrders);
+          });
+
           final pendingOrders = allOrders
               .where((o) => o.status == OrderStatus.pending)
               .toList();
@@ -102,7 +131,6 @@ class _KitchenScreenState extends ConsumerState<KitchenScreen> {
 
           return Row(
             children: [
-              // Pending column
               Expanded(
                 child: _OrderColumn(
                   title: 'Pendientes',
@@ -114,7 +142,6 @@ class _KitchenScreenState extends ConsumerState<KitchenScreen> {
                 ),
               ),
               const VerticalDivider(width: 1),
-              // Preparing column
               Expanded(
                 child: _OrderColumn(
                   title: 'Preparando',
@@ -126,7 +153,6 @@ class _KitchenScreenState extends ConsumerState<KitchenScreen> {
                 ),
               ),
               const VerticalDivider(width: 1),
-              // Ready column
               Expanded(
                 child: _OrderColumn(
                   title: 'Listos',
@@ -177,7 +203,6 @@ class _OrderColumn extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Column header
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(AppSpacing.paddingS),
@@ -213,7 +238,6 @@ class _OrderColumn extends StatelessWidget {
             ],
           ),
         ),
-        // Orders list
         Expanded(
           child: orders.isEmpty
               ? Center(
@@ -263,7 +287,6 @@ class _KitchenOrderCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Order header
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -279,7 +302,6 @@ class _KitchenOrderCard extends StatelessWidget {
               ],
             ),
             const Divider(),
-            // Order items
             ...order.items.map((item) => Padding(
                   padding: const EdgeInsets.symmetric(vertical: 2),
                   child: Text(
@@ -288,7 +310,6 @@ class _KitchenOrderCard extends StatelessWidget {
                   ),
                 )),
             const SizedBox(height: 8),
-            // Action button
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(

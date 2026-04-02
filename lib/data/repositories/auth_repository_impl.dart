@@ -48,6 +48,16 @@ class AuthRepositoryImpl implements AuthRepository {
     await (_db.delete(_db.users)..where((u) => u.id.equals(id))).go();
   }
 
+  @override
+  Future<bool> isPinAvailable(String pin, {String? excludeUserId}) async {
+    final row = await (_db.select(_db.users)
+          ..where((u) => u.pin.equals(pin)))
+        .getSingleOrNull();
+    if (row == null) return true;
+    if (excludeUserId != null && row.id == excludeUserId) return true;
+    return false;
+  }
+
   AppUser _toEntity(User row) {
     return AppUser(
       id: row.id,

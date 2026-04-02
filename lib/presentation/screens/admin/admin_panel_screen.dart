@@ -10,6 +10,7 @@ import '../login_screen.dart';
 import 'product_list_screen.dart';
 import 'category_management_screen.dart';
 import 'promo_management_screen.dart';
+import 'user_management_screen.dart';
 
 class AdminPanelScreen extends ConsumerWidget {
   const AdminPanelScreen({super.key});
@@ -43,8 +44,9 @@ class AdminPanelScreen extends ConsumerWidget {
             ),
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () {
-              ref.read(authProvider.notifier).logout();
+            onPressed: () async {
+              await ref.read(authProvider.notifier).logout();
+              if (!context.mounted) return;
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(builder: (_) => const LoginScreen()),
                 (route) => false,
@@ -135,6 +137,17 @@ class AdminPanelScreen extends ConsumerWidget {
                     ),
                   );
                 }
+              },
+            ),
+            const SizedBox(height: AppSpacing.gapM),
+            _AdminTile(
+              icon: Icons.people_outlined,
+              title: 'Gestion de usuarios',
+              subtitle: 'Administrar trabajadores y PINs',
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(
+                  builder: (_) => const UserManagementScreen(),
+                ));
               },
             ),
           ],
