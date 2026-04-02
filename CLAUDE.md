@@ -94,12 +94,43 @@ Self-service kiosk POS for food ordering (cafeteria, restaurant, etc.). Based on
 - Auto-refresh every 5 seconds for new orders
 - One-tap status progression, order details with items + queue number
 
+### Phase E — Order Display Screen ✓
+- `lib/presentation/screens/order_display_screen.dart` — Public-facing queue board for TV/secondary display
+- Two columns: Preparando | Listos para retirar
+- Large queue number badges with pulse animation for ready orders
+- Auto-refresh every 3 seconds, dark background for visibility
+
+### Production Polish ✓
+1. **Kitchen notifications** — Haptic + 880Hz beep on new orders (`assets/sounds/new_order.mp3`)
+2. **Daily queue reset** — Queue number resets to 1 each day (SQL date filter)
+3. **Session persistence** — SharedPreferences saves/restores login across app restarts
+4. **Unique PIN validation** — `isPinAvailable()` prevents duplicate PINs
+5. **Payment confirmation** — Dialog before processing payment
+6. **User management** — `admin/user_management_screen.dart` with full CRUD + role assignment
+
+### Audit Log System ✓
+- `AuditLogs` table in Drift DB (schema v3)
+- `AuditLogRepository` — queries by entity type, user, date range, sales only
+- `AuditLogger` convenience class for logging from providers
+- `admin/audit_log_screen.dart` — Color-coded log viewer (green=create, orange=edit, red=delete, blue=sale)
+- Sales auto-logged with amount, payment method, item count
+
+### Transbank POS Integration ✓
+- `lib/data/services/transbank/transbank_service.dart` — MethodChannel to native Android
+- `MainActivity.kt` — Launches Transbank intent (`cl.transbank.pos.ACTION_SALE`)
+- Card payments routed through terminal: "Esperando pago en terminal..."
+- Handles approved/rejected/cancelled/error responses
+- Simulated payments on non-Android for development
+- SuccessScreen shows card last 4 digits + auth code
+
 ### Final Stats
-- **158 tests** — all passing
+- **180 tests** — all passing
 - **0 analysis issues**
 - **Architecture:** Clean Architecture (domain/data/presentation layers)
-- **Auth:** PIN-based with admin/worker roles
-- **App flow:** Login → (Admin Panel | Kitchen | Kiosk mode)
+- **DB schema:** v3 (Users, Categories, Products, Promos, Orders, OrderItems, AuditLogs)
+- **Auth:** PIN-based with admin/worker roles + session persistence
+- **Payments:** Cash, Transbank POS (card), Transfer
+- **App flow:** Login → (Admin Panel | Kitchen | Kiosk | Order Display)
 
 ## Key Design Specs (from Figma)
 - Primary: #FF9B17 | PrimaryDark: #FF4D03
@@ -110,7 +141,7 @@ Self-service kiosk POS for food ordering (cafeteria, restaurant, etc.). Based on
 
 ## Commands
 ```bash
-flutter test                    # Run all 158 tests
+flutter test                    # Run all 180 tests
 flutter test --coverage         # With coverage report
 flutter analyze                 # Static analysis
 flutter run                     # Run app
