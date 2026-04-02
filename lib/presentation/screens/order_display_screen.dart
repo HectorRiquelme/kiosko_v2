@@ -8,8 +8,12 @@ import '../../domain/entities/order.dart';
 import '../providers/database_provider.dart';
 
 final displayOrdersProvider = FutureProvider<List<Order>>((ref) async {
-  final repo = ref.watch(orderRepositoryProvider);
-  return repo.getAllOrders();
+  try {
+    final repo = ref.watch(orderRepositoryProvider);
+    return await repo.getAllOrders();
+  } catch (_) {
+    return <Order>[];
+  }
 });
 
 /// Public-facing display screen that shows order queue numbers
@@ -120,10 +124,17 @@ class _OrderDisplayScreenState extends ConsumerState<OrderDisplayScreen> {
               loading: () => const Center(
                 child: CircularProgressIndicator(color: AppColors.primary),
               ),
-              error: (_, _) => Center(
-                child: Text('Error',
-                    style: AppTypography.headline2
-                        .copyWith(color: AppColors.error)),
+              error: (error, _) => Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.error_outline, size: 60, color: AppColors.error),
+                    const SizedBox(height: 16),
+                    Text('Sin pedidos en preparacion',
+                        style: AppTypography.headline2
+                            .copyWith(color: AppColors.textSecondary)),
+                  ],
+                ),
               ),
             ),
           ),

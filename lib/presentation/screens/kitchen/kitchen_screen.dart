@@ -13,8 +13,12 @@ import '../../providers/database_provider.dart';
 import '../login_screen.dart';
 
 final kitchenOrdersProvider = FutureProvider<List<Order>>((ref) async {
-  final repo = ref.watch(orderRepositoryProvider);
-  return repo.getAllOrders();
+  try {
+    final repo = ref.watch(orderRepositoryProvider);
+    return await repo.getAllOrders();
+  } catch (_) {
+    return <Order>[];
+  }
 });
 
 class KitchenScreen extends ConsumerStatefulWidget {
