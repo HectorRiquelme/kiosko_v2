@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
+import '../../domain/entities/cart.dart';
+import '../../domain/entities/cart_item.dart' as domain;
+import '../providers/cart_provider.dart';
+import '../providers/categories_provider.dart';
+import '../providers/products_provider.dart';
 import '../widgets/category_card.dart';
 import '../widgets/product_card.dart';
 import '../widgets/promo_card.dart';
@@ -9,121 +15,15 @@ import '../widgets/hero_banner.dart';
 import '../widgets/kiosk_search_bar.dart';
 import '../widgets/cart_bottom_bar.dart';
 
-// Mock data for standalone UI
-class _MockData {
-  static const categories = [
-    {'name': 'Cafe', 'imageUrl': 'https://placehold.co/100'},
-    {'name': 'Bebidas', 'imageUrl': 'https://placehold.co/100'},
-    {'name': 'Pasteles', 'imageUrl': 'https://placehold.co/100'},
-    {'name': 'Snacks', 'imageUrl': 'https://placehold.co/100'},
-    {'name': 'Combos', 'imageUrl': 'https://placehold.co/100'},
-  ];
-
-  static const products = [
-    {
-      'name': 'Cappuccino',
-      'imageUrl': 'https://placehold.co/150',
-      'price': 350000
-    },
-    {
-      'name': 'Latte',
-      'imageUrl': 'https://placehold.co/150',
-      'price': 380000
-    },
-    {
-      'name': 'Americano',
-      'imageUrl': 'https://placehold.co/150',
-      'price': 280000
-    },
-    {
-      'name': 'Mocha',
-      'imageUrl': 'https://placehold.co/150',
-      'price': 420000
-    },
-    {
-      'name': 'Espresso',
-      'imageUrl': 'https://placehold.co/150',
-      'price': 250000
-    },
-    {
-      'name': 'Flat White',
-      'imageUrl': 'https://placehold.co/150',
-      'price': 390000
-    },
-  ];
-}
-
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   final _searchController = TextEditingController();
-  final List<CartItem> _cartItems = [];
-
-  int get _totalInCents =>
-      _cartItems.fold(0, (sum, i) => sum + i.priceInCents * i.quantity);
-
-  void _addToCart(String name, int price) {
-    setState(() {
-      final existing = _cartItems.indexWhere((i) => i.name == name);
-      if (existing >= 0) {
-        final item = _cartItems[existing];
-        _cartItems[existing] = CartItem(
-          productId: item.productId,
-          name: item.name,
-          imageUrl: item.imageUrl,
-          priceInCents: item.priceInCents,
-          quantity: item.quantity + 1,
-        );
-      } else {
-        _cartItems.add(CartItem(
-          productId: name,
-          name: name,
-          imageUrl: 'https://placehold.co/80',
-          priceInCents: price,
-          quantity: 1,
-        ));
-      }
-    });
-  }
-
-  void _incrementItem(CartItem item) {
-    setState(() {
-      final idx = _cartItems.indexWhere((i) => i.productId == item.productId);
-      if (idx >= 0) {
-        _cartItems[idx] = CartItem(
-          productId: item.productId,
-          name: item.name,
-          imageUrl: item.imageUrl,
-          priceInCents: item.priceInCents,
-          quantity: item.quantity + 1,
-        );
-      }
-    });
-  }
-
-  void _decrementItem(CartItem item) {
-    setState(() {
-      final idx = _cartItems.indexWhere((i) => i.productId == item.productId);
-      if (idx >= 0) {
-        if (item.quantity <= 1) {
-          _cartItems.removeAt(idx);
-        } else {
-          _cartItems[idx] = CartItem(
-            productId: item.productId,
-            name: item.name,
-            imageUrl: item.imageUrl,
-            priceInCents: item.priceInCents,
-            quantity: item.quantity - 1,
-          );
-        }
-      }
-    });
-  }
 
   @override
   void dispose() {
@@ -131,23 +31,39 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
+  void _onSearch() {
+    ref.read(searchQueryProvider.notifier).state =
+        _searchController.text.trim();
+  }
+
+  void _onCategoryTap(String categoryId) {
+    final current = ref.read(selectedCategoryProvider);
+    ref.read(selectedCategoryProvider.notifier).state =
+        current == categoryId ? null : categoryId;
+    // Clear search when selecting category
+    _searchController.clear();
+    ref.read(searchQueryProvider.notifier).state = '';
+  }
+
   @override
   Widget build(BuildContext context) {
+    final cart = ref.watch(cartProvider);
+
     return Scaffold(
       backgroundColor: AppColors.backgroundGrey,
       body: LayoutBuilder(
         builder: (context, constraints) {
           final isLandscape = constraints.maxWidth >= 900;
           if (isLandscape) {
-            return _buildLandscapeLayout();
+            return _buildLandscapeLayout(cart);
           }
-          return _buildPortraitLayout();
+          return _buildPortraitLayout(cart);
         },
       ),
     );
   }
 
-  Widget _buildPortraitLayout() {
+  Widget _buildPortraitLayout(Cart cart) {
     return Stack(
       children: [
         CustomScrollView(
@@ -156,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
             SliverToBoxAdapter(
               child: KioskSearchBar(
                 controller: _searchController,
-                onSearch: () {},
+                onSearch: _onSearch,
               ),
             ),
             SliverToBoxAdapter(child: _buildHeroBanner()),
@@ -170,27 +86,20 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        if (_cartItems.isNotEmpty)
+        if (!cart.isEmpty)
           Positioned(
             left: 0,
             right: 0,
             bottom: 0,
-            child: CartBottomBar(
-              items: _cartItems,
-              totalInCents: _totalInCents,
-              onContinue: () {},
-              onIncrement: _incrementItem,
-              onDecrement: _decrementItem,
-            ),
+            child: _buildCartBar(cart),
           ),
       ],
     );
   }
 
-  Widget _buildLandscapeLayout() {
+  Widget _buildLandscapeLayout(Cart cart) {
     return Row(
       children: [
-        // Sidebar (25%)
         SizedBox(
           width: MediaQuery.of(context).size.width * 0.25,
           child: Container(
@@ -200,11 +109,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 _buildHeader(),
                 const SizedBox(height: AppSpacing.gapM),
                 Expanded(child: _buildCategoriesColumn()),
-                if (_cartItems.isNotEmpty)
+                if (!cart.isEmpty)
                   Padding(
                     padding: const EdgeInsets.all(AppSpacing.paddingS),
                     child: Text(
-                      'Carrito: ${_cartItems.length} items',
+                      'Carrito: ${cart.totalItems} items',
                       style: AppTypography.bodyMedium,
                     ),
                   ),
@@ -212,7 +121,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
-        // Content (75%)
         Expanded(
           child: Stack(
             children: [
@@ -221,7 +129,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   SliverToBoxAdapter(
                     child: KioskSearchBar(
                       controller: _searchController,
-                      onSearch: () {},
+                      onSearch: _onSearch,
                     ),
                   ),
                   SliverToBoxAdapter(child: _buildHeroBanner()),
@@ -234,23 +142,33 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ],
               ),
-              if (_cartItems.isNotEmpty)
+              if (!cart.isEmpty)
                 Positioned(
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  child: CartBottomBar(
-                    items: _cartItems,
-                    totalInCents: _totalInCents,
-                    onContinue: () {},
-                    onIncrement: _incrementItem,
-                    onDecrement: _decrementItem,
-                  ),
+                  child: _buildCartBar(cart),
                 ),
             ],
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildCartBar(Cart cart) {
+    return CartBottomBar(
+      items: cart.items,
+      totalInCents: cart.totalInCents,
+      onContinue: () {
+        Navigator.of(context).pushNamed('/cart');
+      },
+      onIncrement: (domain.CartItem item) {
+        ref.read(cartProvider.notifier).incrementItem(item.product.id);
+      },
+      onDecrement: (domain.CartItem item) {
+        ref.read(cartProvider.notifier).decrementItem(item.product.id);
+      },
     );
   }
 
@@ -291,40 +209,78 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildCategoriesRow() {
-    return SizedBox(
-      height: AppSpacing.categoryCardSize + AppSpacing.paddingS,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding:
-            const EdgeInsets.symmetric(horizontal: AppSpacing.paddingS),
-        itemCount: _MockData.categories.length,
-        separatorBuilder: (_, _) =>
-            const SizedBox(width: AppSpacing.gapL),
-        itemBuilder: (context, index) {
-          final cat = _MockData.categories[index];
-          return CategoryCard(
-            name: cat['name']!,
-            imageUrl: cat['imageUrl']!,
-            onTap: () {},
-          );
-        },
+    final categoriesAsync = ref.watch(categoriesProvider);
+    final selectedCategory = ref.watch(selectedCategoryProvider);
+
+    return categoriesAsync.when(
+      data: (categories) => SizedBox(
+        height: AppSpacing.categoryCardSize + AppSpacing.paddingS,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          padding:
+              const EdgeInsets.symmetric(horizontal: AppSpacing.paddingS),
+          itemCount: categories.length,
+          separatorBuilder: (_, _) =>
+              const SizedBox(width: AppSpacing.gapL),
+          itemBuilder: (context, index) {
+            final cat = categories[index];
+            return Opacity(
+              opacity: selectedCategory == null ||
+                      selectedCategory == cat.id
+                  ? 1.0
+                  : 0.5,
+              child: CategoryCard(
+                name: cat.name,
+                imageUrl: cat.imageUrl,
+                onTap: () => _onCategoryTap(cat.id),
+              ),
+            );
+          },
+        ),
+      ),
+      loading: () => const SizedBox(
+        height: 195,
+        child: Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
+      ),
+      error: (_, _) => const SizedBox(
+        height: 195,
+        child: Center(child: Text('Error al cargar categorias')),
       ),
     );
   }
 
   Widget _buildCategoriesColumn() {
-    return ListView.separated(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.paddingS),
-      itemCount: _MockData.categories.length,
-      separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.gapM),
-      itemBuilder: (context, index) {
-        final cat = _MockData.categories[index];
-        return CategoryCard(
-          name: cat['name']!,
-          imageUrl: cat['imageUrl']!,
-          onTap: () {},
-        );
-      },
+    final categoriesAsync = ref.watch(categoriesProvider);
+    final selectedCategory = ref.watch(selectedCategoryProvider);
+
+    return categoriesAsync.when(
+      data: (categories) => ListView.separated(
+        padding:
+            const EdgeInsets.symmetric(horizontal: AppSpacing.paddingS),
+        itemCount: categories.length,
+        separatorBuilder: (_, _) =>
+            const SizedBox(height: AppSpacing.gapM),
+        itemBuilder: (context, index) {
+          final cat = categories[index];
+          return Opacity(
+            opacity: selectedCategory == null ||
+                    selectedCategory == cat.id
+                ? 1.0
+                : 0.5,
+            child: CategoryCard(
+              name: cat.name,
+              imageUrl: cat.imageUrl,
+              onTap: () => _onCategoryTap(cat.id),
+            ),
+          );
+        },
+      ),
+      loading: () => const Center(
+        child: CircularProgressIndicator(color: AppColors.primary),
+      ),
+      error: (_, _) => const Center(child: Text('Error')),
     );
   }
 
@@ -363,33 +319,60 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   SliverGrid _buildProductsGrid(int crossAxisCount) {
-    return SliverGrid(
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: crossAxisCount,
-        childAspectRatio:
-            AppSpacing.productCardWidth / AppSpacing.productCardHeight,
-        crossAxisSpacing: AppSpacing.gapM,
-        mainAxisSpacing: AppSpacing.gapM,
+    final productsAsync = ref.watch(productsProvider);
+    final cart = ref.watch(cartProvider);
+
+    return productsAsync.when(
+      data: (products) => SliverGrid(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: crossAxisCount,
+          childAspectRatio:
+              AppSpacing.productCardWidth / AppSpacing.productCardHeight,
+          crossAxisSpacing: AppSpacing.gapM,
+          mainAxisSpacing: AppSpacing.gapM,
+        ),
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            final product = products[index];
+            final inCart = cart.containsProduct(product.id);
+            final qty = cart.quantityOf(product.id);
+            return ProductCard(
+              name: product.name,
+              imageUrl: product.imageUrl,
+              priceInCents: product.priceInCents,
+              onAddToCart: () {
+                ref.read(cartProvider.notifier).addToCart(product);
+              },
+              isInCart: inCart,
+              quantityInCart: qty,
+            );
+          },
+          childCount: products.length,
+        ),
       ),
-      delegate: SliverChildBuilderDelegate(
-        (context, index) {
-          final product = _MockData.products[index];
-          final name = product['name'] as String;
-          final price = product['price'] as int;
-          final inCart = _cartItems.any((i) => i.name == name);
-          final qty = inCart
-              ? _cartItems.firstWhere((i) => i.name == name).quantity
-              : 0;
-          return ProductCard(
-            name: name,
-            imageUrl: product['imageUrl'] as String,
-            priceInCents: price,
-            onAddToCart: () => _addToCart(name, price),
-            isInCart: inCart,
-            quantityInCart: qty,
-          );
-        },
-        childCount: _MockData.products.length,
+      loading: () => SliverGrid(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: crossAxisCount,
+          childAspectRatio:
+              AppSpacing.productCardWidth / AppSpacing.productCardHeight,
+        ),
+        delegate: SliverChildBuilderDelegate(
+          (_, _) => const Center(
+            child: CircularProgressIndicator(color: AppColors.primary),
+          ),
+          childCount: 1,
+        ),
+      ),
+      error: (_, _) => SliverGrid(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: crossAxisCount,
+          childAspectRatio:
+              AppSpacing.productCardWidth / AppSpacing.productCardHeight,
+        ),
+        delegate: SliverChildBuilderDelegate(
+          (_, _) => const Center(child: Text('Error al cargar productos')),
+          childCount: 1,
+        ),
       ),
     );
   }

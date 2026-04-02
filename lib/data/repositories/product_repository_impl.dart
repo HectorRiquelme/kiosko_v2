@@ -1,0 +1,66 @@
+import 'package:drift/drift.dart';
+import '../../domain/entities/product.dart' as domain;
+import '../../domain/entities/category.dart' as domain;
+import '../../domain/repositories/product_repository.dart';
+import '../datasources/app_database.dart';
+import '../models/db_mappers.dart';
+
+class ProductRepositoryImpl implements ProductRepository {
+  final AppDatabase _db;
+
+  ProductRepositoryImpl(this._db);
+
+  @override
+  Future<List<domain.Product>> getAllProducts() async {
+    final rows = await (_db.select(_db.products)
+          ..where((p) => p.available.equals(true)))
+        .get();
+    return rows.map((r) => r.toEntity()).toList();
+  }
+
+  @override
+  Future<List<domain.Product>> getProductsByCategory(String categoryId) async {
+    final rows = await (_db.select(_db.products)
+          ..where(
+              (p) => p.categoryId.equals(categoryId) & p.available.equals(true)))
+        .get();
+    return rows.map((r) => r.toEntity()).toList();
+  }
+
+  @override
+  Future<List<domain.Product>> searchProducts(String query) async {
+    final rows = await (_db.select(_db.products)
+          ..where((p) =>
+              p.name.like('%$query%') & p.available.equals(true)))
+        .get();
+    return rows.map((r) => r.toEntity()).toList();
+  }
+
+  @override
+  Future<domain.Product?> getProductById(String id) async {
+    final row = await (_db.select(_db.products)
+          ..where((p) => p.id.equals(id)))
+        .getSingleOrNull();
+    return row?.toEntity();
+  }
+
+  @override
+  Future<List<domain.Category>> getAllCategories() async {
+    final rows = await (_db.select(_db.categories)
+          ..orderBy([(c) => OrderingTerm.asc(c.sortOrder)]))
+        .get();
+    return rows.map((r) => r.toEntity()).toList();
+  }
+
+  @override
+  Future<void> insertProduct(domain.Product product) async {
+    await _db.into(_db.products).insertOnConflictUpdate(product.toCompanion());
+  }
+
+  @override
+  Future<void> insertCategory(domain.Category category) async {
+    await _db
+        .into(_db.categories)
+        .insertOnConflictUpdate(category.toCompanion());
+  }
+}

@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kiosko_v2/presentation/widgets/cart_bottom_bar.dart';
+import 'package:kiosko_v2/domain/entities/cart_item.dart' as domain;
+import 'package:kiosko_v2/domain/entities/product.dart';
 
 void main() {
   group('CartBottomBar', () {
+    final testProduct = Product(
+      id: '1',
+      name: 'Cappuccino',
+      imageUrl: 'https://example.com/cap.png',
+      priceInCents: 350000,
+      categoryId: 'cafe',
+    );
+
     final testItems = [
-      const CartItem(
-        productId: '1',
-        name: 'Cappuccino',
-        imageUrl: 'https://example.com/cap.png',
-        priceInCents: 350000,
-        quantity: 2,
-      ),
+      domain.CartItem(product: testProduct, quantity: 2),
     ];
 
     testWidgets('displays continue button', (tester) async {

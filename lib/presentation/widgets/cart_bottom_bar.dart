@@ -4,30 +4,15 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/animations/animated_counter.dart';
-
-class CartItem {
-  final String productId;
-  final String name;
-  final String imageUrl;
-  final int priceInCents;
-  final int quantity;
-
-  const CartItem({
-    required this.productId,
-    required this.name,
-    required this.imageUrl,
-    required this.priceInCents,
-    required this.quantity,
-  });
-}
+import '../../domain/entities/cart_item.dart' as domain;
 
 class CartBottomBar extends StatelessWidget {
-  final List<CartItem> items;
+  final List<domain.CartItem> items;
   final int totalInCents;
   final String currencySymbol;
   final VoidCallback onContinue;
-  final ValueChanged<CartItem> onIncrement;
-  final ValueChanged<CartItem> onDecrement;
+  final ValueChanged<domain.CartItem> onIncrement;
+  final ValueChanged<domain.CartItem> onDecrement;
 
   const CartBottomBar({
     super.key,
@@ -124,7 +109,7 @@ class CartBottomBar extends StatelessWidget {
 }
 
 class _CartItemTile extends StatelessWidget {
-  final CartItem item;
+  final domain.CartItem item;
   final String currencySymbol;
   final VoidCallback onIncrement;
   final VoidCallback onDecrement;
@@ -149,7 +134,7 @@ class _CartItemTile extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            item.name,
+            item.product.name,
             style: AppTypography.buttonSmall,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
