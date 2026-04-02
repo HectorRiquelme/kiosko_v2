@@ -32,7 +32,7 @@ void main() {
       expect(find.text('Estado de pedidos'), findsOneWidget);
     });
 
-    testWidgets('shows empty state when no orders', (tester) async {
+    testWidgets('shows order columns with seeded data', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [databaseProvider.overrideWithValue(db)],
@@ -42,7 +42,9 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
       await tester.pump(const Duration(milliseconds: 500));
 
-      expect(find.text('Sin pedidos en preparacion'), findsOneWidget);
+      // Seeded data has preparing and ready orders
+      expect(find.text('Preparando'), findsOneWidget);
+      expect(find.text('Listos para retirar'), findsOneWidget);
     });
   });
 }

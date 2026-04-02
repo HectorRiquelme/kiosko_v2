@@ -53,21 +53,23 @@ void main() {
     });
 
     test('getAllOrders returns all', () async {
-      await repo.placeOrder(createTestOrder(queueNumber: 1));
+      final seeded = await repo.getAllOrders();
+      expect(seeded.length, 4); // 4 demo orders seeded
+      await repo.placeOrder(createTestOrder(queueNumber: 5));
       await Future.delayed(const Duration(milliseconds: 10));
-      await repo.placeOrder(createTestOrder(queueNumber: 2));
+      await repo.placeOrder(createTestOrder(queueNumber: 6));
 
       final orders = await repo.getAllOrders();
-      expect(orders.length, 2);
+      expect(orders.length, seeded.length + 2);
     });
 
     test('getNextQueueNumber increments', () async {
       final n1 = await repo.getNextQueueNumber();
-      expect(n1, 1);
+      expect(n1, 5); // 4 demo orders seeded with queue 1-4
 
-      await repo.placeOrder(createTestOrder(queueNumber: 1));
+      await repo.placeOrder(createTestOrder(queueNumber: 5));
       final n2 = await repo.getNextQueueNumber();
-      expect(n2, 2);
+      expect(n2, 6);
     });
 
     test('updateOrderStatus changes status', () async {

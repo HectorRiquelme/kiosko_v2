@@ -170,13 +170,16 @@ class _DisplaySection extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: color, size: 32),
-              const SizedBox(width: 12),
-              Text(
-                title,
-                style: AppTypography.headline2.copyWith(
-                  color: color,
-                  fontSize: 28,
+              Icon(icon, color: color, size: 24),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  title,
+                  style: AppTypography.headline2.copyWith(
+                    color: color,
+                    fontSize: 18,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],

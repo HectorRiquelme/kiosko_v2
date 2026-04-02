@@ -57,7 +57,7 @@ void main() {
 
       expect(order.status, OrderStatus.pending);
       expect(order.totalInCents, 1080000);
-      expect(order.queueNumber, 1);
+      expect(order.queueNumber, 5); // 4 demo orders seeded
       expect(order.items.length, 2);
 
       // 6. Cart should be empty after ordering
@@ -72,8 +72,8 @@ void main() {
 
     test('search products', () async {
       final results = await productRepo.searchProducts('Latte');
-      expect(results.length, 1);
-      expect(results.first.name, 'Latte');
+      expect(results.length, 2); // Latte + Chai Latte
+      expect(results.any((p) => p.name == 'Latte'), true);
     });
 
     test('cart management operations', () async {
@@ -110,12 +110,12 @@ void main() {
       cartRepo.addToCart(products[1]);
       final order2 = await placeOrder(PaymentMethod.card);
 
-      expect(order1.queueNumber, 1);
-      expect(order2.queueNumber, 2);
+      expect(order1.queueNumber, 5); // 4 demo orders seeded
+      expect(order2.queueNumber, 6);
 
-      // All orders persist
+      // All orders persist (4 seeded + 2 new)
       final allOrders = await orderRepo.getAllOrders();
-      expect(allOrders.length, 2);
+      expect(allOrders.length, 6);
     });
 
     test('order status can be updated', () async {

@@ -28,8 +28,10 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
       await tester.pump(const Duration(milliseconds: 500));
 
-      // When no orders, shows empty state
-      expect(find.text('Sin pedidos pendientes'), findsOneWidget);
+      // With seeded orders, shows column headers
+      expect(find.text('Pendientes'), findsOneWidget);
+      expect(find.text('Preparando'), findsOneWidget);
+      expect(find.text('Listos'), findsOneWidget);
     });
 
     testWidgets('shows Cocina title', (tester) async {

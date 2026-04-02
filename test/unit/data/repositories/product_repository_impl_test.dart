@@ -27,7 +27,7 @@ void main() {
 
     test('getAllProducts returns seeded products', () async {
       final products = await repo.getAllProducts();
-      expect(products.length, 11);
+      expect(products.length, 19);
     });
 
     test('getProductsByCategory filters correctly', () async {

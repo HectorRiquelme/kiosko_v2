@@ -18,12 +18,13 @@ void main() {
   });
 
   group('AuditLogRepository', () {
-    test('starts with no logs', () async {
+    test('starts with seeded logs', () async {
       final logs = await repo.getAll();
-      expect(logs.isEmpty, true);
+      expect(logs.length, 7);
     });
 
     test('log creates an entry', () async {
+      final before = await repo.getAll();
       await repo.log(
         userId: 'admin1',
         userName: 'Admin',
@@ -35,13 +36,14 @@ void main() {
       );
 
       final logs = await repo.getAll();
-      expect(logs.length, 1);
-      expect(logs.first.action, AuditAction.create);
+      expect(logs.length, before.length + 1);
       expect(logs.first.entityName, 'Cappuccino');
+      expect(logs.first.action, AuditAction.create);
       expect(logs.first.userName, 'Admin');
     });
 
     test('getByEntityType filters correctly', () async {
+      final productLogsBefore = await repo.getByEntityType(AuditEntityType.product);
       await repo.log(
         userId: 'admin1', userName: 'Admin',
         action: AuditAction.create, entityType: AuditEntityType.product,
@@ -54,11 +56,13 @@ void main() {
       );
 
       final productLogs = await repo.getByEntityType(AuditEntityType.product);
-      expect(productLogs.length, 1);
+      expect(productLogs.length, productLogsBefore.length + 1);
       expect(productLogs.first.entityName, 'Producto');
     });
 
     test('getSales returns only sale entries', () async {
+      final salesBefore = await repo.getSales();
+      expect(salesBefore.length, 3); // 3 seeded sale entries
       await repo.log(
         userId: 'system', userName: 'Sistema',
         action: AuditAction.sale, entityType: AuditEntityType.order,
@@ -71,11 +75,15 @@ void main() {
       );
 
       final sales = await repo.getSales();
-      expect(sales.length, 1);
-      expect(sales.first.action, AuditAction.sale);
+      expect(sales.length, salesBefore.length + 1);
+      for (final s in sales) {
+        expect(s.action, AuditAction.sale);
+      }
     });
 
     test('getByUser filters by userId', () async {
+      final adminBefore = await repo.getByUser('admin1');
+      expect(adminBefore.length, 3); // 3 seeded admin1 entries
       await repo.log(
         userId: 'admin1', userName: 'Admin',
         action: AuditAction.create, entityType: AuditEntityType.product,
@@ -88,8 +96,10 @@ void main() {
       );
 
       final adminLogs = await repo.getByUser('admin1');
-      expect(adminLogs.length, 1);
-      expect(adminLogs.first.userName, 'Admin');
+      expect(adminLogs.length, adminBefore.length + 1);
+      for (final l in adminLogs) {
+        expect(l.userId, 'admin1');
+      }
     });
 
     test('can retrieve logs with limit', () async {

@@ -18,24 +18,25 @@ void main() {
   });
 
   group('PromoRepositoryImpl', () {
-    test('starts with no promos', () async {
+    test('starts with seeded promos', () async {
       final promos = await repo.getAllPromos();
-      expect(promos.isEmpty, true);
+      expect(promos.length, 4);
     });
 
     test('insertPromo and getAll', () async {
+      final before = await repo.getAllPromos();
       await repo.insertPromo(const Promo(
         id: 'p1',
         title: 'Verano',
         discountPercent: 20,
       ));
       final promos = await repo.getAllPromos();
-      expect(promos.length, 1);
-      expect(promos.first.title, 'Verano');
-      expect(promos.first.discountPercent, 20);
+      expect(promos.length, before.length + 1);
+      expect(promos.any((p) => p.title == 'Verano' && p.discountPercent == 20), true);
     });
 
     test('getActivePromos filters inactive', () async {
+      final activeBefore = await repo.getActivePromos();
       await repo.insertPromo(const Promo(
         id: 'p1',
         title: 'Active',
@@ -47,8 +48,8 @@ void main() {
         active: false,
       ));
       final active = await repo.getActivePromos();
-      expect(active.length, 1);
-      expect(active.first.title, 'Active');
+      expect(active.length, activeBefore.length + 1);
+      expect(active.any((p) => p.title == 'Active'), true);
     });
 
     test('updatePromo modifies promo', () async {

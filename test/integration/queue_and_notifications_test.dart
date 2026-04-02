@@ -25,16 +25,16 @@ void main() {
       await db.close();
     });
 
-    test('queue numbers are sequential starting at 1', () async {
+    test('queue numbers are sequential starting at 5', () async {
       final products = await productRepo.getAllProducts();
       final placeOrder = PlaceOrder(orderRepo, cartRepo);
 
-      // Place 3 orders
+      // Place 3 orders (4 demo orders already seeded with queue 1-4)
       for (int i = 1; i <= 3; i++) {
         cartRepo.addToCart(products.first);
         await Future.delayed(const Duration(milliseconds: 1));
         final order = await placeOrder(PaymentMethod.cash);
-        expect(order.queueNumber, i);
+        expect(order.queueNumber, 4 + i);
       }
     });
 
@@ -90,7 +90,7 @@ void main() {
       }
 
       final allOrders = await orderRepo.getAllOrders();
-      expect(allOrders.length, 4);
+      expect(allOrders.length, 8); // 4 seeded + 4 new
 
       // Mark one as delivered
       await orderRepo.updateOrderStatus(
@@ -104,7 +104,7 @@ void main() {
               o.status == OrderStatus.preparing ||
               o.status == OrderStatus.ready)
           .toList();
-      expect(active.length, 3);
+      expect(active.length, 7); // 8 total - 1 delivered
     });
 
     test('cash order has correct payment method', () async {
@@ -158,9 +158,9 @@ void main() {
       await Future.delayed(const Duration(milliseconds: 1));
       final order3 = await placeOrder(PaymentMethod.cash);
 
-      expect(order1.queueNumber, 1);
-      expect(order2.queueNumber, 2);
-      expect(order3.queueNumber, 3);
+      expect(order1.queueNumber, 5); // 4 demo orders seeded
+      expect(order2.queueNumber, 6);
+      expect(order3.queueNumber, 7);
     });
   });
 }
