@@ -13,6 +13,9 @@ import 'promo_management_screen.dart';
 import 'user_management_screen.dart';
 import 'audit_log_screen.dart';
 import 'sales_report_screen.dart';
+import 'printer_settings_screen.dart';
+import 'backup_screen.dart';
+import 'lan_sync_screen.dart';
 
 class AdminPanelScreen extends ConsumerWidget {
   const AdminPanelScreen({super.key});
@@ -169,6 +172,39 @@ class AdminPanelScreen extends ConsumerWidget {
               onTap: () {
                 Navigator.push(context, MaterialPageRoute(
                   builder: (_) => const SalesReportScreen(),
+                ));
+              },
+            ),
+            const SizedBox(height: AppSpacing.gapM),
+            _AdminTile(
+              icon: Icons.print_outlined,
+              title: 'Configurar impresora',
+              subtitle: 'Conectar impresora termica de recibos',
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(
+                  builder: (_) => const PrinterSettingsScreen(),
+                ));
+              },
+            ),
+            const SizedBox(height: AppSpacing.gapM),
+            _AdminTile(
+              icon: Icons.backup_outlined,
+              title: 'Backup / Restaurar',
+              subtitle: 'Respaldar y restaurar base de datos',
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(
+                  builder: (_) => const BackupScreen(),
+                ));
+              },
+            ),
+            const SizedBox(height: AppSpacing.gapM),
+            _AdminTile(
+              icon: Icons.sync,
+              title: 'Sincronizacion LAN',
+              subtitle: 'Conectar multiples tablets en la misma red',
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(
+                  builder: (_) => const LanSyncScreen(),
                 ));
               },
             ),

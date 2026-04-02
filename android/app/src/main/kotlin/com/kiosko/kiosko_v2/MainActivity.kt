@@ -9,6 +9,7 @@ import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
     private val CHANNEL = "com.kiosko.transbank"
+    private val PRINTER_CHANNEL = "com.kiosko.printer"
     private val TRANSBANK_REQUEST_CODE = 1001
     private val TRANSBANK_PACKAGE = "cl.transbank.pos"
 
@@ -17,6 +18,7 @@ class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
+        // Transbank channel
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
                 "processPayment" -> {
@@ -28,8 +30,24 @@ class MainActivity : FlutterActivity() {
                     result.success(isTransbankInstalled())
                 }
                 "getLastTransaction" -> {
-                    // Last transaction query via Transbank intent
                     result.success(null)
+                }
+                else -> result.notImplemented()
+            }
+        }
+
+        // Printer channel
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, PRINTER_CHANNEL).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "discoverPrinters" -> {
+                    // TODO: Implement Bluetooth device discovery
+                    result.success(emptyList<Map<String, String>>())
+                }
+                "printRaw" -> {
+                    // TODO: Implement raw byte printing via Bluetooth/USB
+                    val address = call.argument<String>("address") ?: ""
+                    val bytes = call.argument<ByteArray>("bytes")
+                    result.success(false) // Not implemented yet
                 }
                 else -> result.notImplemented()
             }
