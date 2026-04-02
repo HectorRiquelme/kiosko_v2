@@ -69,11 +69,37 @@ Self-service kiosk POS for food ordering (cafeteria, restaurant, etc.). Based on
 - `lib/presentation/screens/admin/admin_panel_screen.dart` — Admin panel with product management, order history, printer config
 - `lib/data/services/receipt_printer.dart` — Receipt generation + print placeholder
 
+### Phase A — Auth + Roles ✓
+- `lib/domain/entities/user.dart` — AppUser entity with UserRole enum (admin/worker)
+- `lib/data/repositories/auth_repository_impl.dart` — PIN authentication via Drift DB
+- `lib/presentation/providers/auth_provider.dart` — AuthNotifier with login/logout
+- `lib/presentation/screens/login_screen.dart` — PIN numpad, kiosk mode bypass
+- Users table with seed data: admin (PIN 1234), worker (PIN 0000)
+
+### Phase B — CRUD Products + Images ✓
+- `lib/presentation/screens/admin/product_list_screen.dart` — Product listing with availability toggle, edit, delete
+- `lib/presentation/screens/admin/product_form_screen.dart` — Create/edit product with image picker, price, category
+- `lib/presentation/screens/admin/category_management_screen.dart` — Category CRUD with drag-to-reorder
+- image_picker integration for local image storage
+
+### Phase C — Offers/Promos ✓
+- `lib/domain/entities/promo.dart` — Promo entity with % and fixed discounts, date range validation
+- `lib/data/repositories/promo_repository_impl.dart` — Promo CRUD via Drift
+- `lib/presentation/screens/admin/promo_management_screen.dart` — Full promo management UI
+- Promos table in Drift DB
+
+### Phase D — Kitchen Screen ✓
+- `lib/presentation/screens/kitchen/kitchen_screen.dart` — Three-column Kanban board
+- Columns: Pendientes → Preparando → Listos (with count badges)
+- Auto-refresh every 5 seconds for new orders
+- One-tap status progression, order details with items + queue number
+
 ### Final Stats
-- **128 tests** — all passing
-- **80% source coverage** (excluding generated `.g.dart`)
+- **158 tests** — all passing
 - **0 analysis issues**
 - **Architecture:** Clean Architecture (domain/data/presentation layers)
+- **Auth:** PIN-based with admin/worker roles
+- **App flow:** Login → (Admin Panel | Kitchen | Kiosk mode)
 
 ## Key Design Specs (from Figma)
 - Primary: #FF9B17 | PrimaryDark: #FF4D03
@@ -84,7 +110,7 @@ Self-service kiosk POS for food ordering (cafeteria, restaurant, etc.). Based on
 
 ## Commands
 ```bash
-flutter test                    # Run all 128 tests
+flutter test                    # Run all 158 tests
 flutter test --coverage         # With coverage report
 flutter analyze                 # Static analysis
 flutter run                     # Run app
