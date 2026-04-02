@@ -45,22 +45,22 @@ void main() {
 
     test('incrementItem increases quantity', () {
       container.read(cartProvider.notifier).addToCart(product);
-      container.read(cartProvider.notifier).incrementItem('1');
+      container.read(cartProvider.notifier).incrementItem('1[]');
       final cart = container.read(cartProvider);
       expect(cart.quantityOf('1'), 2);
     });
 
     test('decrementItem decreases quantity', () {
       container.read(cartProvider.notifier).addToCart(product);
-      container.read(cartProvider.notifier).incrementItem('1');
-      container.read(cartProvider.notifier).decrementItem('1');
+      container.read(cartProvider.notifier).incrementItem('1[]');
+      container.read(cartProvider.notifier).decrementItem('1[]');
       final cart = container.read(cartProvider);
       expect(cart.quantityOf('1'), 1);
     });
 
     test('removeFromCart removes product', () {
       container.read(cartProvider.notifier).addToCart(product);
-      container.read(cartProvider.notifier).removeFromCart('1');
+      container.read(cartProvider.notifier).removeFromCart('1[]');
       final cart = container.read(cartProvider);
       expect(cart.isEmpty, true);
     });

@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kiosko_v2/domain/entities/product.dart';
 import 'package:kiosko_v2/domain/entities/cart_item.dart';
 import 'package:kiosko_v2/domain/entities/cart.dart';
+import 'package:kiosko_v2/domain/entities/modifier.dart';
 import 'package:kiosko_v2/domain/entities/order.dart';
 import 'package:kiosko_v2/domain/repositories/cart_repository.dart';
 import 'package:kiosko_v2/domain/repositories/order_repository.dart';
@@ -18,8 +19,12 @@ class InMemoryCartRepository implements CartRepository {
   Cart getCart() => _cart;
 
   @override
-  Cart addToCart(Product product) {
-    final existing = _cart.items.indexWhere((i) => i.product.id == product.id);
+  Cart addToCart(Product product,
+      {List<SelectedModifier> modifiers = const [],
+      int modifierPriceAdjustCents = 0}) {
+    final newItem = CartItem(product: product, quantity: 1,
+        modifiers: modifiers, modifierPriceAdjustCents: modifierPriceAdjustCents);
+    final existing = _cart.items.indexWhere((i) => i.cartKey == newItem.cartKey);
     if (existing >= 0) {
       final items = List<CartItem>.from(_cart.items);
       items[existing] = items[existing].copyWith(
@@ -35,17 +40,17 @@ class InMemoryCartRepository implements CartRepository {
   }
 
   @override
-  Cart removeFromCart(String productId) {
+  Cart removeFromCart(String cartKey) {
     _cart = _cart.copyWith(
-      items: _cart.items.where((i) => i.product.id != productId).toList(),
+      items: _cart.items.where((i) => i.cartKey != cartKey).toList(),
     );
     return _cart;
   }
 
   @override
-  Cart incrementItem(String productId) {
+  Cart incrementItem(String cartKey) {
     final items = List<CartItem>.from(_cart.items);
-    final idx = items.indexWhere((i) => i.product.id == productId);
+    final idx = items.indexWhere((i) => i.cartKey == cartKey);
     if (idx >= 0) {
       items[idx] = items[idx].copyWith(quantity: items[idx].quantity + 1);
       _cart = _cart.copyWith(items: items);
@@ -54,9 +59,9 @@ class InMemoryCartRepository implements CartRepository {
   }
 
   @override
-  Cart decrementItem(String productId) {
+  Cart decrementItem(String cartKey) {
     final items = List<CartItem>.from(_cart.items);
-    final idx = items.indexWhere((i) => i.product.id == productId);
+    final idx = items.indexWhere((i) => i.cartKey == cartKey);
     if (idx >= 0) {
       if (items[idx].quantity <= 1) {
         items.removeAt(idx);
@@ -140,7 +145,7 @@ void main() {
       final repo = InMemoryCartRepository();
       repo.addToCart(product);
       final removeFromCart = RemoveFromCart(repo);
-      final cart = removeFromCart(product.id);
+      final cart = removeFromCart('${product.id}[]');
       expect(cart.isEmpty, true);
     });
   });

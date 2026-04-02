@@ -5,6 +5,7 @@ import '../../data/repositories/cart_repository_impl.dart';
 import '../../data/repositories/order_repository_impl.dart';
 import '../../data/repositories/promo_repository_impl.dart';
 import '../../data/repositories/audit_log_repository.dart';
+import '../../data/repositories/modifier_repository.dart';
 import '../../domain/repositories/product_repository.dart';
 import '../../domain/repositories/cart_repository.dart';
 import '../../domain/repositories/order_repository.dart';
@@ -34,4 +35,8 @@ final promoRepositoryProvider = Provider<PromoRepository>((ref) {
 
 final auditLogRepositoryProvider = Provider<AuditLogRepository>((ref) {
   return AuditLogRepository(ref.watch(databaseProvider));
+});
+
+final modifierRepositoryProvider = Provider<ModifierRepository>((ref) {
+  return ModifierRepository(ref.watch(databaseProvider));
 });

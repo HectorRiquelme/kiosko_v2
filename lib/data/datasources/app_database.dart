@@ -76,6 +76,24 @@ class OrderItems extends Table {
   IntColumn get priceInCents => integer()();
 }
 
+class ProductModifiers extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get productId => text()();
+  TextColumn get group => text()(); // 'size', 'extras', 'milk', etc
+  TextColumn get name => text()(); // 'Grande', 'Crema extra', 'Leche soya'
+  IntColumn get priceAdjustCents => integer().withDefault(const Constant(0))();
+  IntColumn get sortOrder => integer().withDefault(const Constant(0))();
+  BoolColumn get isDefault => boolean().withDefault(const Constant(false))();
+}
+
+class OrderItemModifiers extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get orderItemId => integer()();
+  TextColumn get modifierName => text()();
+  TextColumn get modifierGroup => text()();
+  IntColumn get priceAdjustCents => integer().withDefault(const Constant(0))();
+}
+
 class AuditLogs extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get userId => text()();
@@ -88,13 +106,13 @@ class AuditLogs extends Table {
   DateTimeColumn get createdAt => dateTime()();
 }
 
-@DriftDatabase(tables: [Users, Categories, Products, Promos, Orders, OrderItems, AuditLogs])
+@DriftDatabase(tables: [Users, Categories, Products, Promos, Orders, OrderItems, ProductModifiers, OrderItemModifiers, AuditLogs])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(connection.openConnection());
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration {
@@ -111,6 +129,11 @@ class AppDatabase extends _$AppDatabase {
         }
         if (from < 3) {
           await m.createTable(auditLogs);
+        }
+        if (from < 4) {
+          await m.createTable(productModifiers);
+          await m.createTable(orderItemModifiers);
+          await _seedModifiers();
         }
       },
     );
@@ -135,9 +158,81 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
+  Future<void> _seedModifiers() async {
+    await batch((b) {
+      b.insertAll(productModifiers, [
+        // Sizes for all coffees
+        for (final pid in ['cap', 'lat', 'ame', 'moc', 'esp', 'fla', 'chai']) ...[
+          ProductModifiersCompanion.insert(
+            productId: pid, group: 'Tamano', name: 'Pequeno',
+            isDefault: const Value(true), sortOrder: const Value(0),
+          ),
+          ProductModifiersCompanion.insert(
+            productId: pid, group: 'Tamano', name: 'Mediano',
+            priceAdjustCents: const Value(50000), sortOrder: const Value(1),
+          ),
+          ProductModifiersCompanion.insert(
+            productId: pid, group: 'Tamano', name: 'Grande',
+            priceAdjustCents: const Value(100000), sortOrder: const Value(2),
+          ),
+        ],
+        // Milk options for coffees
+        for (final pid in ['cap', 'lat', 'moc', 'fla', 'chai']) ...[
+          ProductModifiersCompanion.insert(
+            productId: pid, group: 'Leche', name: 'Normal',
+            isDefault: const Value(true), sortOrder: const Value(0),
+          ),
+          ProductModifiersCompanion.insert(
+            productId: pid, group: 'Leche', name: 'Descremada',
+            sortOrder: const Value(1),
+          ),
+          ProductModifiersCompanion.insert(
+            productId: pid, group: 'Leche', name: 'Soya',
+            priceAdjustCents: const Value(30000), sortOrder: const Value(2),
+          ),
+          ProductModifiersCompanion.insert(
+            productId: pid, group: 'Leche', name: 'Almendra',
+            priceAdjustCents: const Value(40000), sortOrder: const Value(3),
+          ),
+        ],
+        // Extras for coffees
+        for (final pid in ['cap', 'lat', 'ame', 'moc', 'fla']) ...[
+          ProductModifiersCompanion.insert(
+            productId: pid, group: 'Extras', name: 'Shot extra',
+            priceAdjustCents: const Value(50000), sortOrder: const Value(0),
+          ),
+          ProductModifiersCompanion.insert(
+            productId: pid, group: 'Extras', name: 'Crema batida',
+            priceAdjustCents: const Value(30000), sortOrder: const Value(1),
+          ),
+          ProductModifiersCompanion.insert(
+            productId: pid, group: 'Extras', name: 'Caramelo',
+            priceAdjustCents: const Value(30000), sortOrder: const Value(2),
+          ),
+        ],
+        // Sugar for all beverages
+        for (final pid in ['cap', 'lat', 'ame', 'moc', 'esp', 'fla', 'chai']) ...[
+          ProductModifiersCompanion.insert(
+            productId: pid, group: 'Azucar', name: 'Normal',
+            isDefault: const Value(true), sortOrder: const Value(0),
+          ),
+          ProductModifiersCompanion.insert(
+            productId: pid, group: 'Azucar', name: 'Sin azucar',
+            sortOrder: const Value(1),
+          ),
+          ProductModifiersCompanion.insert(
+            productId: pid, group: 'Azucar', name: 'Stevia',
+            sortOrder: const Value(2),
+          ),
+        ],
+      ]);
+    });
+  }
+
   Future<void> _seedData() async {
     await _seedUsers();
     await _seedCatalog();
+    await _seedModifiers();
     await _seedPromos();
     await _seedDemoOrders();
     await _seedDemoAuditLogs();

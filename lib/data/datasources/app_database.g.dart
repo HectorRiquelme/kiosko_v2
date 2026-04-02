@@ -2541,6 +2541,835 @@ class OrderItemsCompanion extends UpdateCompanion<OrderItem> {
   }
 }
 
+class $ProductModifiersTable extends ProductModifiers
+    with TableInfo<$ProductModifiersTable, ProductModifier> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ProductModifiersTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _productIdMeta = const VerificationMeta(
+    'productId',
+  );
+  @override
+  late final GeneratedColumn<String> productId = GeneratedColumn<String>(
+    'product_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _groupMeta = const VerificationMeta('group');
+  @override
+  late final GeneratedColumn<String> group = GeneratedColumn<String>(
+    'group',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _priceAdjustCentsMeta = const VerificationMeta(
+    'priceAdjustCents',
+  );
+  @override
+  late final GeneratedColumn<int> priceAdjustCents = GeneratedColumn<int>(
+    'price_adjust_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _sortOrderMeta = const VerificationMeta(
+    'sortOrder',
+  );
+  @override
+  late final GeneratedColumn<int> sortOrder = GeneratedColumn<int>(
+    'sort_order',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _isDefaultMeta = const VerificationMeta(
+    'isDefault',
+  );
+  @override
+  late final GeneratedColumn<bool> isDefault = GeneratedColumn<bool>(
+    'is_default',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_default" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    productId,
+    group,
+    name,
+    priceAdjustCents,
+    sortOrder,
+    isDefault,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'product_modifiers';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ProductModifier> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('product_id')) {
+      context.handle(
+        _productIdMeta,
+        productId.isAcceptableOrUnknown(data['product_id']!, _productIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_productIdMeta);
+    }
+    if (data.containsKey('group')) {
+      context.handle(
+        _groupMeta,
+        group.isAcceptableOrUnknown(data['group']!, _groupMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_groupMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('price_adjust_cents')) {
+      context.handle(
+        _priceAdjustCentsMeta,
+        priceAdjustCents.isAcceptableOrUnknown(
+          data['price_adjust_cents']!,
+          _priceAdjustCentsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('sort_order')) {
+      context.handle(
+        _sortOrderMeta,
+        sortOrder.isAcceptableOrUnknown(data['sort_order']!, _sortOrderMeta),
+      );
+    }
+    if (data.containsKey('is_default')) {
+      context.handle(
+        _isDefaultMeta,
+        isDefault.isAcceptableOrUnknown(data['is_default']!, _isDefaultMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ProductModifier map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ProductModifier(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      productId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}product_id'],
+      )!,
+      group: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}group'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      priceAdjustCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}price_adjust_cents'],
+      )!,
+      sortOrder: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}sort_order'],
+      )!,
+      isDefault: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_default'],
+      )!,
+    );
+  }
+
+  @override
+  $ProductModifiersTable createAlias(String alias) {
+    return $ProductModifiersTable(attachedDatabase, alias);
+  }
+}
+
+class ProductModifier extends DataClass implements Insertable<ProductModifier> {
+  final int id;
+  final String productId;
+  final String group;
+  final String name;
+  final int priceAdjustCents;
+  final int sortOrder;
+  final bool isDefault;
+  const ProductModifier({
+    required this.id,
+    required this.productId,
+    required this.group,
+    required this.name,
+    required this.priceAdjustCents,
+    required this.sortOrder,
+    required this.isDefault,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['product_id'] = Variable<String>(productId);
+    map['group'] = Variable<String>(group);
+    map['name'] = Variable<String>(name);
+    map['price_adjust_cents'] = Variable<int>(priceAdjustCents);
+    map['sort_order'] = Variable<int>(sortOrder);
+    map['is_default'] = Variable<bool>(isDefault);
+    return map;
+  }
+
+  ProductModifiersCompanion toCompanion(bool nullToAbsent) {
+    return ProductModifiersCompanion(
+      id: Value(id),
+      productId: Value(productId),
+      group: Value(group),
+      name: Value(name),
+      priceAdjustCents: Value(priceAdjustCents),
+      sortOrder: Value(sortOrder),
+      isDefault: Value(isDefault),
+    );
+  }
+
+  factory ProductModifier.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ProductModifier(
+      id: serializer.fromJson<int>(json['id']),
+      productId: serializer.fromJson<String>(json['productId']),
+      group: serializer.fromJson<String>(json['group']),
+      name: serializer.fromJson<String>(json['name']),
+      priceAdjustCents: serializer.fromJson<int>(json['priceAdjustCents']),
+      sortOrder: serializer.fromJson<int>(json['sortOrder']),
+      isDefault: serializer.fromJson<bool>(json['isDefault']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'productId': serializer.toJson<String>(productId),
+      'group': serializer.toJson<String>(group),
+      'name': serializer.toJson<String>(name),
+      'priceAdjustCents': serializer.toJson<int>(priceAdjustCents),
+      'sortOrder': serializer.toJson<int>(sortOrder),
+      'isDefault': serializer.toJson<bool>(isDefault),
+    };
+  }
+
+  ProductModifier copyWith({
+    int? id,
+    String? productId,
+    String? group,
+    String? name,
+    int? priceAdjustCents,
+    int? sortOrder,
+    bool? isDefault,
+  }) => ProductModifier(
+    id: id ?? this.id,
+    productId: productId ?? this.productId,
+    group: group ?? this.group,
+    name: name ?? this.name,
+    priceAdjustCents: priceAdjustCents ?? this.priceAdjustCents,
+    sortOrder: sortOrder ?? this.sortOrder,
+    isDefault: isDefault ?? this.isDefault,
+  );
+  ProductModifier copyWithCompanion(ProductModifiersCompanion data) {
+    return ProductModifier(
+      id: data.id.present ? data.id.value : this.id,
+      productId: data.productId.present ? data.productId.value : this.productId,
+      group: data.group.present ? data.group.value : this.group,
+      name: data.name.present ? data.name.value : this.name,
+      priceAdjustCents: data.priceAdjustCents.present
+          ? data.priceAdjustCents.value
+          : this.priceAdjustCents,
+      sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
+      isDefault: data.isDefault.present ? data.isDefault.value : this.isDefault,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ProductModifier(')
+          ..write('id: $id, ')
+          ..write('productId: $productId, ')
+          ..write('group: $group, ')
+          ..write('name: $name, ')
+          ..write('priceAdjustCents: $priceAdjustCents, ')
+          ..write('sortOrder: $sortOrder, ')
+          ..write('isDefault: $isDefault')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    productId,
+    group,
+    name,
+    priceAdjustCents,
+    sortOrder,
+    isDefault,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ProductModifier &&
+          other.id == this.id &&
+          other.productId == this.productId &&
+          other.group == this.group &&
+          other.name == this.name &&
+          other.priceAdjustCents == this.priceAdjustCents &&
+          other.sortOrder == this.sortOrder &&
+          other.isDefault == this.isDefault);
+}
+
+class ProductModifiersCompanion extends UpdateCompanion<ProductModifier> {
+  final Value<int> id;
+  final Value<String> productId;
+  final Value<String> group;
+  final Value<String> name;
+  final Value<int> priceAdjustCents;
+  final Value<int> sortOrder;
+  final Value<bool> isDefault;
+  const ProductModifiersCompanion({
+    this.id = const Value.absent(),
+    this.productId = const Value.absent(),
+    this.group = const Value.absent(),
+    this.name = const Value.absent(),
+    this.priceAdjustCents = const Value.absent(),
+    this.sortOrder = const Value.absent(),
+    this.isDefault = const Value.absent(),
+  });
+  ProductModifiersCompanion.insert({
+    this.id = const Value.absent(),
+    required String productId,
+    required String group,
+    required String name,
+    this.priceAdjustCents = const Value.absent(),
+    this.sortOrder = const Value.absent(),
+    this.isDefault = const Value.absent(),
+  }) : productId = Value(productId),
+       group = Value(group),
+       name = Value(name);
+  static Insertable<ProductModifier> custom({
+    Expression<int>? id,
+    Expression<String>? productId,
+    Expression<String>? group,
+    Expression<String>? name,
+    Expression<int>? priceAdjustCents,
+    Expression<int>? sortOrder,
+    Expression<bool>? isDefault,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (productId != null) 'product_id': productId,
+      if (group != null) 'group': group,
+      if (name != null) 'name': name,
+      if (priceAdjustCents != null) 'price_adjust_cents': priceAdjustCents,
+      if (sortOrder != null) 'sort_order': sortOrder,
+      if (isDefault != null) 'is_default': isDefault,
+    });
+  }
+
+  ProductModifiersCompanion copyWith({
+    Value<int>? id,
+    Value<String>? productId,
+    Value<String>? group,
+    Value<String>? name,
+    Value<int>? priceAdjustCents,
+    Value<int>? sortOrder,
+    Value<bool>? isDefault,
+  }) {
+    return ProductModifiersCompanion(
+      id: id ?? this.id,
+      productId: productId ?? this.productId,
+      group: group ?? this.group,
+      name: name ?? this.name,
+      priceAdjustCents: priceAdjustCents ?? this.priceAdjustCents,
+      sortOrder: sortOrder ?? this.sortOrder,
+      isDefault: isDefault ?? this.isDefault,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (productId.present) {
+      map['product_id'] = Variable<String>(productId.value);
+    }
+    if (group.present) {
+      map['group'] = Variable<String>(group.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (priceAdjustCents.present) {
+      map['price_adjust_cents'] = Variable<int>(priceAdjustCents.value);
+    }
+    if (sortOrder.present) {
+      map['sort_order'] = Variable<int>(sortOrder.value);
+    }
+    if (isDefault.present) {
+      map['is_default'] = Variable<bool>(isDefault.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ProductModifiersCompanion(')
+          ..write('id: $id, ')
+          ..write('productId: $productId, ')
+          ..write('group: $group, ')
+          ..write('name: $name, ')
+          ..write('priceAdjustCents: $priceAdjustCents, ')
+          ..write('sortOrder: $sortOrder, ')
+          ..write('isDefault: $isDefault')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $OrderItemModifiersTable extends OrderItemModifiers
+    with TableInfo<$OrderItemModifiersTable, OrderItemModifier> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $OrderItemModifiersTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _orderItemIdMeta = const VerificationMeta(
+    'orderItemId',
+  );
+  @override
+  late final GeneratedColumn<int> orderItemId = GeneratedColumn<int>(
+    'order_item_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _modifierNameMeta = const VerificationMeta(
+    'modifierName',
+  );
+  @override
+  late final GeneratedColumn<String> modifierName = GeneratedColumn<String>(
+    'modifier_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _modifierGroupMeta = const VerificationMeta(
+    'modifierGroup',
+  );
+  @override
+  late final GeneratedColumn<String> modifierGroup = GeneratedColumn<String>(
+    'modifier_group',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _priceAdjustCentsMeta = const VerificationMeta(
+    'priceAdjustCents',
+  );
+  @override
+  late final GeneratedColumn<int> priceAdjustCents = GeneratedColumn<int>(
+    'price_adjust_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    orderItemId,
+    modifierName,
+    modifierGroup,
+    priceAdjustCents,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'order_item_modifiers';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<OrderItemModifier> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('order_item_id')) {
+      context.handle(
+        _orderItemIdMeta,
+        orderItemId.isAcceptableOrUnknown(
+          data['order_item_id']!,
+          _orderItemIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_orderItemIdMeta);
+    }
+    if (data.containsKey('modifier_name')) {
+      context.handle(
+        _modifierNameMeta,
+        modifierName.isAcceptableOrUnknown(
+          data['modifier_name']!,
+          _modifierNameMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_modifierNameMeta);
+    }
+    if (data.containsKey('modifier_group')) {
+      context.handle(
+        _modifierGroupMeta,
+        modifierGroup.isAcceptableOrUnknown(
+          data['modifier_group']!,
+          _modifierGroupMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_modifierGroupMeta);
+    }
+    if (data.containsKey('price_adjust_cents')) {
+      context.handle(
+        _priceAdjustCentsMeta,
+        priceAdjustCents.isAcceptableOrUnknown(
+          data['price_adjust_cents']!,
+          _priceAdjustCentsMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  OrderItemModifier map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return OrderItemModifier(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      orderItemId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}order_item_id'],
+      )!,
+      modifierName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}modifier_name'],
+      )!,
+      modifierGroup: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}modifier_group'],
+      )!,
+      priceAdjustCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}price_adjust_cents'],
+      )!,
+    );
+  }
+
+  @override
+  $OrderItemModifiersTable createAlias(String alias) {
+    return $OrderItemModifiersTable(attachedDatabase, alias);
+  }
+}
+
+class OrderItemModifier extends DataClass
+    implements Insertable<OrderItemModifier> {
+  final int id;
+  final int orderItemId;
+  final String modifierName;
+  final String modifierGroup;
+  final int priceAdjustCents;
+  const OrderItemModifier({
+    required this.id,
+    required this.orderItemId,
+    required this.modifierName,
+    required this.modifierGroup,
+    required this.priceAdjustCents,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['order_item_id'] = Variable<int>(orderItemId);
+    map['modifier_name'] = Variable<String>(modifierName);
+    map['modifier_group'] = Variable<String>(modifierGroup);
+    map['price_adjust_cents'] = Variable<int>(priceAdjustCents);
+    return map;
+  }
+
+  OrderItemModifiersCompanion toCompanion(bool nullToAbsent) {
+    return OrderItemModifiersCompanion(
+      id: Value(id),
+      orderItemId: Value(orderItemId),
+      modifierName: Value(modifierName),
+      modifierGroup: Value(modifierGroup),
+      priceAdjustCents: Value(priceAdjustCents),
+    );
+  }
+
+  factory OrderItemModifier.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return OrderItemModifier(
+      id: serializer.fromJson<int>(json['id']),
+      orderItemId: serializer.fromJson<int>(json['orderItemId']),
+      modifierName: serializer.fromJson<String>(json['modifierName']),
+      modifierGroup: serializer.fromJson<String>(json['modifierGroup']),
+      priceAdjustCents: serializer.fromJson<int>(json['priceAdjustCents']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'orderItemId': serializer.toJson<int>(orderItemId),
+      'modifierName': serializer.toJson<String>(modifierName),
+      'modifierGroup': serializer.toJson<String>(modifierGroup),
+      'priceAdjustCents': serializer.toJson<int>(priceAdjustCents),
+    };
+  }
+
+  OrderItemModifier copyWith({
+    int? id,
+    int? orderItemId,
+    String? modifierName,
+    String? modifierGroup,
+    int? priceAdjustCents,
+  }) => OrderItemModifier(
+    id: id ?? this.id,
+    orderItemId: orderItemId ?? this.orderItemId,
+    modifierName: modifierName ?? this.modifierName,
+    modifierGroup: modifierGroup ?? this.modifierGroup,
+    priceAdjustCents: priceAdjustCents ?? this.priceAdjustCents,
+  );
+  OrderItemModifier copyWithCompanion(OrderItemModifiersCompanion data) {
+    return OrderItemModifier(
+      id: data.id.present ? data.id.value : this.id,
+      orderItemId: data.orderItemId.present
+          ? data.orderItemId.value
+          : this.orderItemId,
+      modifierName: data.modifierName.present
+          ? data.modifierName.value
+          : this.modifierName,
+      modifierGroup: data.modifierGroup.present
+          ? data.modifierGroup.value
+          : this.modifierGroup,
+      priceAdjustCents: data.priceAdjustCents.present
+          ? data.priceAdjustCents.value
+          : this.priceAdjustCents,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('OrderItemModifier(')
+          ..write('id: $id, ')
+          ..write('orderItemId: $orderItemId, ')
+          ..write('modifierName: $modifierName, ')
+          ..write('modifierGroup: $modifierGroup, ')
+          ..write('priceAdjustCents: $priceAdjustCents')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    orderItemId,
+    modifierName,
+    modifierGroup,
+    priceAdjustCents,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is OrderItemModifier &&
+          other.id == this.id &&
+          other.orderItemId == this.orderItemId &&
+          other.modifierName == this.modifierName &&
+          other.modifierGroup == this.modifierGroup &&
+          other.priceAdjustCents == this.priceAdjustCents);
+}
+
+class OrderItemModifiersCompanion extends UpdateCompanion<OrderItemModifier> {
+  final Value<int> id;
+  final Value<int> orderItemId;
+  final Value<String> modifierName;
+  final Value<String> modifierGroup;
+  final Value<int> priceAdjustCents;
+  const OrderItemModifiersCompanion({
+    this.id = const Value.absent(),
+    this.orderItemId = const Value.absent(),
+    this.modifierName = const Value.absent(),
+    this.modifierGroup = const Value.absent(),
+    this.priceAdjustCents = const Value.absent(),
+  });
+  OrderItemModifiersCompanion.insert({
+    this.id = const Value.absent(),
+    required int orderItemId,
+    required String modifierName,
+    required String modifierGroup,
+    this.priceAdjustCents = const Value.absent(),
+  }) : orderItemId = Value(orderItemId),
+       modifierName = Value(modifierName),
+       modifierGroup = Value(modifierGroup);
+  static Insertable<OrderItemModifier> custom({
+    Expression<int>? id,
+    Expression<int>? orderItemId,
+    Expression<String>? modifierName,
+    Expression<String>? modifierGroup,
+    Expression<int>? priceAdjustCents,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (orderItemId != null) 'order_item_id': orderItemId,
+      if (modifierName != null) 'modifier_name': modifierName,
+      if (modifierGroup != null) 'modifier_group': modifierGroup,
+      if (priceAdjustCents != null) 'price_adjust_cents': priceAdjustCents,
+    });
+  }
+
+  OrderItemModifiersCompanion copyWith({
+    Value<int>? id,
+    Value<int>? orderItemId,
+    Value<String>? modifierName,
+    Value<String>? modifierGroup,
+    Value<int>? priceAdjustCents,
+  }) {
+    return OrderItemModifiersCompanion(
+      id: id ?? this.id,
+      orderItemId: orderItemId ?? this.orderItemId,
+      modifierName: modifierName ?? this.modifierName,
+      modifierGroup: modifierGroup ?? this.modifierGroup,
+      priceAdjustCents: priceAdjustCents ?? this.priceAdjustCents,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (orderItemId.present) {
+      map['order_item_id'] = Variable<int>(orderItemId.value);
+    }
+    if (modifierName.present) {
+      map['modifier_name'] = Variable<String>(modifierName.value);
+    }
+    if (modifierGroup.present) {
+      map['modifier_group'] = Variable<String>(modifierGroup.value);
+    }
+    if (priceAdjustCents.present) {
+      map['price_adjust_cents'] = Variable<int>(priceAdjustCents.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('OrderItemModifiersCompanion(')
+          ..write('id: $id, ')
+          ..write('orderItemId: $orderItemId, ')
+          ..write('modifierName: $modifierName, ')
+          ..write('modifierGroup: $modifierGroup, ')
+          ..write('priceAdjustCents: $priceAdjustCents')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $AuditLogsTable extends AuditLogs
     with TableInfo<$AuditLogsTable, AuditLog> {
   @override
@@ -3098,6 +3927,11 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $PromosTable promos = $PromosTable(this);
   late final $OrdersTable orders = $OrdersTable(this);
   late final $OrderItemsTable orderItems = $OrderItemsTable(this);
+  late final $ProductModifiersTable productModifiers = $ProductModifiersTable(
+    this,
+  );
+  late final $OrderItemModifiersTable orderItemModifiers =
+      $OrderItemModifiersTable(this);
   late final $AuditLogsTable auditLogs = $AuditLogsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
@@ -3110,6 +3944,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     promos,
     orders,
     orderItems,
+    productModifiers,
+    orderItemModifiers,
     auditLogs,
   ];
 }
@@ -5057,6 +5893,461 @@ typedef $$OrderItemsTableProcessedTableManager =
       OrderItem,
       PrefetchHooks Function({bool orderId, bool productId})
     >;
+typedef $$ProductModifiersTableCreateCompanionBuilder =
+    ProductModifiersCompanion Function({
+      Value<int> id,
+      required String productId,
+      required String group,
+      required String name,
+      Value<int> priceAdjustCents,
+      Value<int> sortOrder,
+      Value<bool> isDefault,
+    });
+typedef $$ProductModifiersTableUpdateCompanionBuilder =
+    ProductModifiersCompanion Function({
+      Value<int> id,
+      Value<String> productId,
+      Value<String> group,
+      Value<String> name,
+      Value<int> priceAdjustCents,
+      Value<int> sortOrder,
+      Value<bool> isDefault,
+    });
+
+class $$ProductModifiersTableFilterComposer
+    extends Composer<_$AppDatabase, $ProductModifiersTable> {
+  $$ProductModifiersTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get productId => $composableBuilder(
+    column: $table.productId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get group => $composableBuilder(
+    column: $table.group,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get priceAdjustCents => $composableBuilder(
+    column: $table.priceAdjustCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get sortOrder => $composableBuilder(
+    column: $table.sortOrder,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isDefault => $composableBuilder(
+    column: $table.isDefault,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ProductModifiersTableOrderingComposer
+    extends Composer<_$AppDatabase, $ProductModifiersTable> {
+  $$ProductModifiersTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get productId => $composableBuilder(
+    column: $table.productId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get group => $composableBuilder(
+    column: $table.group,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get priceAdjustCents => $composableBuilder(
+    column: $table.priceAdjustCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get sortOrder => $composableBuilder(
+    column: $table.sortOrder,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isDefault => $composableBuilder(
+    column: $table.isDefault,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ProductModifiersTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ProductModifiersTable> {
+  $$ProductModifiersTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get productId =>
+      $composableBuilder(column: $table.productId, builder: (column) => column);
+
+  GeneratedColumn<String> get group =>
+      $composableBuilder(column: $table.group, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<int> get priceAdjustCents => $composableBuilder(
+    column: $table.priceAdjustCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get sortOrder =>
+      $composableBuilder(column: $table.sortOrder, builder: (column) => column);
+
+  GeneratedColumn<bool> get isDefault =>
+      $composableBuilder(column: $table.isDefault, builder: (column) => column);
+}
+
+class $$ProductModifiersTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ProductModifiersTable,
+          ProductModifier,
+          $$ProductModifiersTableFilterComposer,
+          $$ProductModifiersTableOrderingComposer,
+          $$ProductModifiersTableAnnotationComposer,
+          $$ProductModifiersTableCreateCompanionBuilder,
+          $$ProductModifiersTableUpdateCompanionBuilder,
+          (
+            ProductModifier,
+            BaseReferences<
+              _$AppDatabase,
+              $ProductModifiersTable,
+              ProductModifier
+            >,
+          ),
+          ProductModifier,
+          PrefetchHooks Function()
+        > {
+  $$ProductModifiersTableTableManager(
+    _$AppDatabase db,
+    $ProductModifiersTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ProductModifiersTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ProductModifiersTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ProductModifiersTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> productId = const Value.absent(),
+                Value<String> group = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<int> priceAdjustCents = const Value.absent(),
+                Value<int> sortOrder = const Value.absent(),
+                Value<bool> isDefault = const Value.absent(),
+              }) => ProductModifiersCompanion(
+                id: id,
+                productId: productId,
+                group: group,
+                name: name,
+                priceAdjustCents: priceAdjustCents,
+                sortOrder: sortOrder,
+                isDefault: isDefault,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String productId,
+                required String group,
+                required String name,
+                Value<int> priceAdjustCents = const Value.absent(),
+                Value<int> sortOrder = const Value.absent(),
+                Value<bool> isDefault = const Value.absent(),
+              }) => ProductModifiersCompanion.insert(
+                id: id,
+                productId: productId,
+                group: group,
+                name: name,
+                priceAdjustCents: priceAdjustCents,
+                sortOrder: sortOrder,
+                isDefault: isDefault,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ProductModifiersTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ProductModifiersTable,
+      ProductModifier,
+      $$ProductModifiersTableFilterComposer,
+      $$ProductModifiersTableOrderingComposer,
+      $$ProductModifiersTableAnnotationComposer,
+      $$ProductModifiersTableCreateCompanionBuilder,
+      $$ProductModifiersTableUpdateCompanionBuilder,
+      (
+        ProductModifier,
+        BaseReferences<_$AppDatabase, $ProductModifiersTable, ProductModifier>,
+      ),
+      ProductModifier,
+      PrefetchHooks Function()
+    >;
+typedef $$OrderItemModifiersTableCreateCompanionBuilder =
+    OrderItemModifiersCompanion Function({
+      Value<int> id,
+      required int orderItemId,
+      required String modifierName,
+      required String modifierGroup,
+      Value<int> priceAdjustCents,
+    });
+typedef $$OrderItemModifiersTableUpdateCompanionBuilder =
+    OrderItemModifiersCompanion Function({
+      Value<int> id,
+      Value<int> orderItemId,
+      Value<String> modifierName,
+      Value<String> modifierGroup,
+      Value<int> priceAdjustCents,
+    });
+
+class $$OrderItemModifiersTableFilterComposer
+    extends Composer<_$AppDatabase, $OrderItemModifiersTable> {
+  $$OrderItemModifiersTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get orderItemId => $composableBuilder(
+    column: $table.orderItemId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get modifierName => $composableBuilder(
+    column: $table.modifierName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get modifierGroup => $composableBuilder(
+    column: $table.modifierGroup,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get priceAdjustCents => $composableBuilder(
+    column: $table.priceAdjustCents,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$OrderItemModifiersTableOrderingComposer
+    extends Composer<_$AppDatabase, $OrderItemModifiersTable> {
+  $$OrderItemModifiersTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get orderItemId => $composableBuilder(
+    column: $table.orderItemId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get modifierName => $composableBuilder(
+    column: $table.modifierName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get modifierGroup => $composableBuilder(
+    column: $table.modifierGroup,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get priceAdjustCents => $composableBuilder(
+    column: $table.priceAdjustCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$OrderItemModifiersTableAnnotationComposer
+    extends Composer<_$AppDatabase, $OrderItemModifiersTable> {
+  $$OrderItemModifiersTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get orderItemId => $composableBuilder(
+    column: $table.orderItemId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get modifierName => $composableBuilder(
+    column: $table.modifierName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get modifierGroup => $composableBuilder(
+    column: $table.modifierGroup,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get priceAdjustCents => $composableBuilder(
+    column: $table.priceAdjustCents,
+    builder: (column) => column,
+  );
+}
+
+class $$OrderItemModifiersTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $OrderItemModifiersTable,
+          OrderItemModifier,
+          $$OrderItemModifiersTableFilterComposer,
+          $$OrderItemModifiersTableOrderingComposer,
+          $$OrderItemModifiersTableAnnotationComposer,
+          $$OrderItemModifiersTableCreateCompanionBuilder,
+          $$OrderItemModifiersTableUpdateCompanionBuilder,
+          (
+            OrderItemModifier,
+            BaseReferences<
+              _$AppDatabase,
+              $OrderItemModifiersTable,
+              OrderItemModifier
+            >,
+          ),
+          OrderItemModifier,
+          PrefetchHooks Function()
+        > {
+  $$OrderItemModifiersTableTableManager(
+    _$AppDatabase db,
+    $OrderItemModifiersTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$OrderItemModifiersTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$OrderItemModifiersTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$OrderItemModifiersTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> orderItemId = const Value.absent(),
+                Value<String> modifierName = const Value.absent(),
+                Value<String> modifierGroup = const Value.absent(),
+                Value<int> priceAdjustCents = const Value.absent(),
+              }) => OrderItemModifiersCompanion(
+                id: id,
+                orderItemId: orderItemId,
+                modifierName: modifierName,
+                modifierGroup: modifierGroup,
+                priceAdjustCents: priceAdjustCents,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int orderItemId,
+                required String modifierName,
+                required String modifierGroup,
+                Value<int> priceAdjustCents = const Value.absent(),
+              }) => OrderItemModifiersCompanion.insert(
+                id: id,
+                orderItemId: orderItemId,
+                modifierName: modifierName,
+                modifierGroup: modifierGroup,
+                priceAdjustCents: priceAdjustCents,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$OrderItemModifiersTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $OrderItemModifiersTable,
+      OrderItemModifier,
+      $$OrderItemModifiersTableFilterComposer,
+      $$OrderItemModifiersTableOrderingComposer,
+      $$OrderItemModifiersTableAnnotationComposer,
+      $$OrderItemModifiersTableCreateCompanionBuilder,
+      $$OrderItemModifiersTableUpdateCompanionBuilder,
+      (
+        OrderItemModifier,
+        BaseReferences<
+          _$AppDatabase,
+          $OrderItemModifiersTable,
+          OrderItemModifier
+        >,
+      ),
+      OrderItemModifier,
+      PrefetchHooks Function()
+    >;
 typedef $$AuditLogsTableCreateCompanionBuilder =
     AuditLogsCompanion Function({
       Value<int> id,
@@ -5341,6 +6632,10 @@ class $AppDatabaseManager {
       $$OrdersTableTableManager(_db, _db.orders);
   $$OrderItemsTableTableManager get orderItems =>
       $$OrderItemsTableTableManager(_db, _db.orderItems);
+  $$ProductModifiersTableTableManager get productModifiers =>
+      $$ProductModifiersTableTableManager(_db, _db.productModifiers);
+  $$OrderItemModifiersTableTableManager get orderItemModifiers =>
+      $$OrderItemModifiersTableTableManager(_db, _db.orderItemModifiers);
   $$AuditLogsTableTableManager get auditLogs =>
       $$AuditLogsTableTableManager(_db, _db.auditLogs);
 }

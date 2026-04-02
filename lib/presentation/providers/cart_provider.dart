@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/cart.dart';
+import '../../domain/entities/modifier.dart';
 import '../../domain/entities/product.dart';
 import 'database_provider.dart';
 
@@ -8,24 +9,28 @@ class CartNotifier extends StateNotifier<Cart> {
 
   CartNotifier(this._ref) : super(const Cart());
 
-  void addToCart(Product product) {
+  void addToCart(Product product,
+      {List<SelectedModifier> modifiers = const [],
+      int modifierPriceAdjustCents = 0}) {
     final repo = _ref.read(cartRepositoryProvider);
-    state = repo.addToCart(product);
+    state = repo.addToCart(product,
+        modifiers: modifiers,
+        modifierPriceAdjustCents: modifierPriceAdjustCents);
   }
 
-  void removeFromCart(String productId) {
+  void removeFromCart(String cartKey) {
     final repo = _ref.read(cartRepositoryProvider);
-    state = repo.removeFromCart(productId);
+    state = repo.removeFromCart(cartKey);
   }
 
-  void incrementItem(String productId) {
+  void incrementItem(String cartKey) {
     final repo = _ref.read(cartRepositoryProvider);
-    state = repo.incrementItem(productId);
+    state = repo.incrementItem(cartKey);
   }
 
-  void decrementItem(String productId) {
+  void decrementItem(String cartKey) {
     final repo = _ref.read(cartRepositoryProvider);
-    state = repo.decrementItem(productId);
+    state = repo.decrementItem(cartKey);
   }
 
   void clearCart() {

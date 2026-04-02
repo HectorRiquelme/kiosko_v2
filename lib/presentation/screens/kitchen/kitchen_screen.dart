@@ -15,8 +15,10 @@ import '../login_screen.dart';
 final kitchenOrdersProvider = FutureProvider<List<Order>>((ref) async {
   try {
     final repo = ref.watch(orderRepositoryProvider);
-    return await repo.getAllOrders();
-  } catch (_) {
+    final orders = await repo.getAllOrders();
+    return orders;
+  } catch (e) {
+    debugPrint('KitchenOrders error: $e');
     return <Order>[];
   }
 });

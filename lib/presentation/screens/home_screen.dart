@@ -14,6 +14,8 @@ import '../widgets/promo_card.dart';
 import '../widgets/hero_banner.dart';
 import '../widgets/kiosk_search_bar.dart';
 import '../widgets/cart_bottom_bar.dart';
+import '../widgets/modifier_dialog.dart';
+import '../providers/database_provider.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -170,10 +172,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         Navigator.of(context).pushNamed('/cart');
       },
       onIncrement: (domain.CartItem item) {
-        ref.read(cartProvider.notifier).incrementItem(item.product.id);
+        ref.read(cartProvider.notifier).incrementItem(item.cartKey);
       },
       onDecrement: (domain.CartItem item) {
-        ref.read(cartProvider.notifier).decrementItem(item.product.id);
+        ref.read(cartProvider.notifier).decrementItem(item.cartKey);
       },
     );
   }
@@ -345,8 +347,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               name: product.name,
               imageUrl: product.imageUrl,
               priceInCents: product.priceInCents,
-              onAddToCart: () {
-                ref.read(cartProvider.notifier).addToCart(product);
+              onAddToCart: () async {
+                final modRepo = ref.read(modifierRepositoryProvider);
+                final groups = await modRepo.getModifiersForProduct(product.id);
+
+                if (groups.isEmpty) {
+                  ref.read(cartProvider.notifier).addToCart(product);
+                  return;
+                }
+
+                if (!context.mounted) return;
+                final result = await showDialog(
+                  context: context,
+                  builder: (_) => ModifierDialog(
+                    productName: product.name,
+                    basePriceCents: product.priceInCents,
+                    groups: groups,
+                  ),
+                );
+
+                if (result != null) {
+                  ref.read(cartProvider.notifier).addToCart(
+                    product,
+                    modifiers: result.modifiers,
+                    modifierPriceAdjustCents: result.priceAdjust,
+                  );
+                }
               },
               isInCart: inCart,
               quantityInCart: qty,

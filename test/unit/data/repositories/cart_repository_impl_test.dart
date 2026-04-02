@@ -45,27 +45,27 @@ void main() {
   test('removeFromCart removes product', () {
     repo.addToCart(product);
     repo.addToCart(product2);
-    final cart = repo.removeFromCart('1');
+    final cart = repo.removeFromCart('1[]');
     expect(cart.items.length, 1);
     expect(cart.items.first.product.id, '2');
   });
 
   test('incrementItem increases quantity', () {
     repo.addToCart(product);
-    final cart = repo.incrementItem('1');
+    final cart = repo.incrementItem('1[]');
     expect(cart.items.first.quantity, 2);
   });
 
   test('decrementItem decreases quantity', () {
     repo.addToCart(product);
-    repo.incrementItem('1');
-    final cart = repo.decrementItem('1');
+    repo.incrementItem('1[]');
+    final cart = repo.decrementItem('1[]');
     expect(cart.items.first.quantity, 1);
   });
 
   test('decrementItem removes item at quantity 1', () {
     repo.addToCart(product);
-    final cart = repo.decrementItem('1');
+    final cart = repo.decrementItem('1[]');
     expect(cart.isEmpty, true);
   });
 

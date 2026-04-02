@@ -96,7 +96,7 @@ class CartScreen extends ConsumerWidget {
                                   onPressed: () {
                                     ref
                                         .read(cartProvider.notifier)
-                                        .decrementItem(item.product.id);
+                                        .decrementItem(item.cartKey);
                                   },
                                 ),
                                 Text('${item.quantity}',
@@ -108,7 +108,7 @@ class CartScreen extends ConsumerWidget {
                                   onPressed: () {
                                     ref
                                         .read(cartProvider.notifier)
-                                        .incrementItem(item.product.id);
+                                        .incrementItem(item.cartKey);
                                   },
                                 ),
                               ],

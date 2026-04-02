@@ -85,15 +85,16 @@ void main() {
       expect(cartRepo.getCart().totalItems, 1);
 
       // Increment
-      cartRepo.incrementItem(product.id);
+      final cartKey = '${product.id}[]';
+      cartRepo.incrementItem(cartKey);
       expect(cartRepo.getCart().quantityOf(product.id), 2);
 
       // Decrement
-      cartRepo.decrementItem(product.id);
+      cartRepo.decrementItem(cartKey);
       expect(cartRepo.getCart().quantityOf(product.id), 1);
 
       // Remove
-      cartRepo.removeFromCart(product.id);
+      cartRepo.removeFromCart(cartKey);
       expect(cartRepo.getCart().isEmpty, true);
     });
 
