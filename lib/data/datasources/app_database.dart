@@ -1,6 +1,8 @@
 import 'package:drift/drift.dart';
-import 'package:drift_flutter/drift_flutter.dart';
 import '../../core/utils/pin_hasher.dart';
+import 'connection/unsupported.dart'
+    if (dart.library.ffi) 'connection/native.dart'
+    if (dart.library.js_interop) 'connection/web.dart' as connection;
 
 part 'app_database.g.dart';
 
@@ -8,7 +10,7 @@ class Users extends Table {
   TextColumn get id => text()();
   TextColumn get name => text()();
   TextColumn get pin => text()();
-  TextColumn get role => text()(); // 'admin' or 'worker'
+  TextColumn get role => text()();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -45,7 +47,7 @@ class Promos extends Table {
   TextColumn get backgroundColor => text().withDefault(const Constant('#AC0E02'))();
   IntColumn get discountPercent => integer().withDefault(const Constant(0))();
   IntColumn get discountAmountCents => integer().withDefault(const Constant(0))();
-  TextColumn get productIds => text().withDefault(const Constant(''))(); // comma-separated
+  TextColumn get productIds => text().withDefault(const Constant(''))();
   DateTimeColumn get startDate => dateTime().nullable()();
   DateTimeColumn get endDate => dateTime().nullable()();
   BoolColumn get active => boolean().withDefault(const Constant(true))();
@@ -78,8 +80,8 @@ class AuditLogs extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get userId => text()();
   TextColumn get userName => text()();
-  TextColumn get action => text()(); // create, update, delete, sale, login, logout
-  TextColumn get targetType => text()(); // product, category, promo, user, order
+  TextColumn get action => text()();
+  TextColumn get targetType => text()();
   TextColumn get targetId => text()();
   TextColumn get targetName => text()();
   TextColumn get details => text().withDefault(const Constant(''))();
@@ -88,7 +90,7 @@ class AuditLogs extends Table {
 
 @DriftDatabase(tables: [Users, Categories, Products, Promos, Orders, OrderItems, AuditLogs])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super(_openConnection());
+  AppDatabase() : super(connection.openConnection());
   AppDatabase.forTesting(super.e);
 
   @override
@@ -198,8 +200,4 @@ class AppDatabase extends _$AppDatabase {
       ]);
     });
   }
-}
-
-QueryExecutor _openConnection() {
-  return driftDatabase(name: 'kiosko_v2');
 }

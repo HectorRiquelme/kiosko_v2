@@ -142,7 +142,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               Text('Kiosko POS', style: AppTypography.headline2),
               const SizedBox(height: AppSpacing.gapS),
               Text('Ingresa tu PIN', style: AppTypography.bodyMedium),
-              const SizedBox(height: AppSpacing.gapXL),
+              const SizedBox(height: AppSpacing.gapM),
 
               // PIN dots
               Row(
@@ -177,7 +177,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
               ],
 
-              const SizedBox(height: AppSpacing.gapXL),
+              const SizedBox(height: AppSpacing.gapM),
 
               // Numpad
               if (_loading)
@@ -185,7 +185,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               else
                 _buildNumpad(),
 
-              const SizedBox(height: AppSpacing.gapXL),
+              const SizedBox(height: AppSpacing.gapM),
 
               // Kiosk mode button
               TextButton(
