@@ -42,7 +42,7 @@ void main() {
     testWidgets('shows kiosk mode button', (tester) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pump();
-      expect(find.text('Entrar como Kiosko'), findsOneWidget);
+      expect(find.text('Kiosko'), findsOneWidget);
     });
 
     testWidgets('shows Kiosko POS title', (tester) async {

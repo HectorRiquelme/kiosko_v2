@@ -186,51 +186,40 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               else
                 _buildNumpad(),
 
-              const SizedBox(height: AppSpacing.gapM),
-
-              // Kiosk mode button
-              TextButton(
-                onPressed: _enterAsKiosk,
-                child: Text(
-                  'Entrar como Kiosko',
-                  style: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
               const SizedBox(height: AppSpacing.gapS),
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(
-                      builder: (_) => const OrderDisplayScreen(),
-                    ),
-                  );
-                },
-                child: Text(
-                  'Pantalla de pedidos',
-                  style: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.textSecondary,
-                    fontSize: 16,
+
+              // Quick access buttons - compact row
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 8,
+                runSpacing: 4,
+                children: [
+                  TextButton(
+                    onPressed: _enterAsKiosk,
+                    child: Text('Kiosko',
+                        style: AppTypography.bodyMedium.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w600, fontSize: 13)),
                   ),
-                ),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(
-                      builder: (_) => const MenuBoardScreen(),
+                  Text('|', style: TextStyle(color: AppColors.textSecondary)),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (_) => const OrderDisplayScreen()),
                     ),
-                  );
-                },
-                child: Text(
-                  'Menu / Ofertas',
-                  style: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.textSecondary,
-                    fontSize: 16,
+                    child: Text('Pedidos',
+                        style: AppTypography.bodyMedium.copyWith(
+                            color: AppColors.textSecondary, fontSize: 13)),
                   ),
-                ),
+                  Text('|', style: TextStyle(color: AppColors.textSecondary)),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (_) => const MenuBoardScreen()),
+                    ),
+                    child: Text('Menu',
+                        style: AppTypography.bodyMedium.copyWith(
+                            color: AppColors.textSecondary, fontSize: 13)),
+                  ),
+                ],
               ),
             ],
           ),

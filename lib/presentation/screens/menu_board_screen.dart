@@ -30,21 +30,56 @@ class MenuBoardScreen extends ConsumerStatefulWidget {
 
 class _MenuBoardScreenState extends ConsumerState<MenuBoardScreen> {
   Timer? _refreshTimer;
+  Timer? _clockTimer;
+  final ScrollController _promoScroll = ScrollController();
+  String _timeString = '';
 
   @override
   void initState() {
     super.initState();
-    // Refresh every 30 seconds for price/promo updates
+    _updateTime();
+    // Refresh data every 30 seconds
     _refreshTimer = Timer.periodic(const Duration(seconds: 30), (_) {
       ref.invalidate(categoriesProvider);
       ref.invalidate(productsProvider);
       ref.invalidate(menuBoardPromosProvider);
     });
+    // Update clock every second
+    _clockTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      _updateTime();
+    });
+    // Auto-scroll promos every 5 seconds
+    Future.delayed(const Duration(seconds: 3), _autoScrollPromos);
+  }
+
+  void _updateTime() {
+    final now = DateTime.now();
+    setState(() {
+      _timeString =
+          '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+    });
+  }
+
+  void _autoScrollPromos() {
+    if (!mounted || !_promoScroll.hasClients) return;
+    final max = _promoScroll.position.maxScrollExtent;
+    final current = _promoScroll.offset;
+    final next = current + 80;
+
+    _promoScroll.animateTo(
+      next > max ? 0 : next,
+      duration: const Duration(milliseconds: 800),
+      curve: Curves.easeInOut,
+    );
+
+    Future.delayed(const Duration(seconds: 5), _autoScrollPromos);
   }
 
   @override
   void dispose() {
     _refreshTimer?.cancel();
+    _clockTimer?.cancel();
+    _promoScroll.dispose();
     super.dispose();
   }
 
@@ -78,6 +113,9 @@ class _MenuBoardScreenState extends ConsumerState<MenuBoardScreen> {
                     style: AppTypography.headline2.copyWith(
                         color: AppColors.textOnPrimary, fontSize: 20)),
                 Text('MENU',
+                    style: AppTypography.headline2.copyWith(
+                        color: AppColors.textOnPrimary, fontSize: 20)),
+                Text(_timeString,
                     style: AppTypography.headline2.copyWith(
                         color: AppColors.textOnPrimary, fontSize: 20)),
               ],
@@ -219,6 +257,7 @@ class _MenuBoardScreenState extends ConsumerState<MenuBoardScreen> {
     }
 
     return ListView.builder(
+      controller: _promoScroll,
       padding: const EdgeInsets.all(AppSpacing.paddingS),
       itemCount: promos.length,
       itemBuilder: (context, index) {
