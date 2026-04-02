@@ -31,25 +31,28 @@ class MenuBoardScreen extends ConsumerStatefulWidget {
 class _MenuBoardScreenState extends ConsumerState<MenuBoardScreen> {
   Timer? _refreshTimer;
   Timer? _clockTimer;
-  final ScrollController _promoScroll = ScrollController();
+  Timer? _slideTimer;
+  final PageController _pageController = PageController();
   String _timeString = '';
+  int _currentPage = 0;
+  int _totalPages = 0;
 
   @override
   void initState() {
     super.initState();
     _updateTime();
-    // Refresh data every 30 seconds
+    _clockTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      _updateTime();
+    });
     _refreshTimer = Timer.periodic(const Duration(seconds: 30), (_) {
       ref.invalidate(categoriesProvider);
       ref.invalidate(productsProvider);
       ref.invalidate(menuBoardPromosProvider);
     });
-    // Update clock every second
-    _clockTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      _updateTime();
+    // Auto-slide every 6 seconds
+    _slideTimer = Timer.periodic(const Duration(seconds: 6), (_) {
+      _nextSlide();
     });
-    // Auto-scroll promos every 5 seconds
-    Future.delayed(const Duration(seconds: 3), _autoScrollPromos);
   }
 
   void _updateTime() {
@@ -60,26 +63,22 @@ class _MenuBoardScreenState extends ConsumerState<MenuBoardScreen> {
     });
   }
 
-  void _autoScrollPromos() {
-    if (!mounted || !_promoScroll.hasClients) return;
-    final max = _promoScroll.position.maxScrollExtent;
-    final current = _promoScroll.offset;
-    final next = current + 80;
-
-    _promoScroll.animateTo(
-      next > max ? 0 : next,
-      duration: const Duration(milliseconds: 800),
+  void _nextSlide() {
+    if (!mounted || _totalPages <= 1) return;
+    _currentPage = (_currentPage + 1) % _totalPages;
+    _pageController.animateToPage(
+      _currentPage,
+      duration: const Duration(milliseconds: 600),
       curve: Curves.easeInOut,
     );
-
-    Future.delayed(const Duration(seconds: 5), _autoScrollPromos);
   }
 
   @override
   void dispose() {
     _refreshTimer?.cancel();
     _clockTimer?.cancel();
-    _promoScroll.dispose();
+    _slideTimer?.cancel();
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -122,38 +121,150 @@ class _MenuBoardScreenState extends ConsumerState<MenuBoardScreen> {
             ),
           ),
 
-          // Content
+          // Slides content
           Expanded(
-            child: Row(
-              children: [
-                // Left: Products by category (70%)
-                Expanded(
-                  flex: 7,
-                  child: categoriesAsync.when(
-                    data: (categories) => productsAsync.when(
-                      data: (allProducts) => _buildMenuGrid(
-                          categories, allProducts),
-                      loading: () => _buildLoading(),
-                      error: (_, _) => _buildLoading(),
-                    ),
-                    loading: () => _buildLoading(),
-                    error: (_, _) => _buildLoading(),
-                  ),
+            child: categoriesAsync.when(
+              data: (categories) => productsAsync.when(
+                data: (allProducts) => promosAsync.when(
+                  data: (promos) =>
+                      _buildSlideShow(categories, allProducts, promos),
+                  loading: () => _buildLoading(),
+                  error: (_, _) =>
+                      _buildSlideShow(categories, allProducts, []),
                 ),
+                loading: () => _buildLoading(),
+                error: (_, _) => _buildLoading(),
+              ),
+              loading: () => _buildLoading(),
+              error: (_, _) => _buildLoading(),
+            ),
+          ),
 
-                // Right: Promos sidebar (30%)
-                Expanded(
-                  flex: 3,
-                  child: Container(
-                    color: AppColors.backgroundDark,
-                    child: promosAsync.when(
-                      data: (promos) => _buildPromosSidebar(promos),
-                      loading: () => _buildLoading(),
-                      error: (_, _) => const SizedBox(),
+          // Page indicator dots
+          if (_totalPages > 1)
+            Container(
+              color: AppColors.backgroundDark,
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(_totalPages, (i) {
+                  return Container(
+                    width: 10,
+                    height: 10,
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: i == _currentPage
+                          ? AppColors.primary
+                          : AppColors.textSecondary.withValues(alpha: 0.3),
                     ),
+                  );
+                }),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSlideShow(
+    List<domain_cat.Category> categories,
+    List<domain.Product> allProducts,
+    List<Promo> promos,
+  ) {
+    final slides = <Widget>[];
+
+    // Slide 1: Promos highlight (if any)
+    if (promos.isNotEmpty) {
+      slides.add(_buildPromosSlide(promos));
+    }
+
+    // Slides per category
+    for (final cat in categories) {
+      final products =
+          allProducts.where((p) => p.categoryId == cat.id).toList();
+      if (products.isNotEmpty) {
+        slides.add(_buildCategorySlide(cat, products));
+      }
+    }
+
+    // Slide: Full menu overview
+    slides.add(_buildFullMenuSlide(categories, allProducts));
+
+    _totalPages = slides.length;
+
+    return PageView(
+      controller: _pageController,
+      onPageChanged: (i) => setState(() => _currentPage = i),
+      children: slides,
+    );
+  }
+
+  Widget _buildPromosSlide(List<Promo> promos) {
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.paddingM),
+      child: Column(
+        children: [
+          Text('OFERTAS ESPECIALES',
+              style: AppTypography.headline2.copyWith(
+                color: AppColors.primary,
+                fontSize: 24,
+              )),
+          const SizedBox(height: AppSpacing.gapM),
+          Expanded(
+            child: GridView.builder(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 2.5,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+              ),
+              itemCount: promos.length,
+              itemBuilder: (_, i) {
+                final promo = promos[i];
+                return Container(
+                  padding: const EdgeInsets.all(AppSpacing.paddingM),
+                  decoration: BoxDecoration(
+                    color: _parseColor(promo.backgroundColor),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusM),
                   ),
-                ),
-              ],
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(promo.title,
+                          style: AppTypography.headline2.copyWith(
+                              color: AppColors.textOnPrimary, fontSize: 20),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis),
+                      if (promo.subtitle != null)
+                        Text(promo.subtitle!,
+                            style: AppTypography.bodyMedium.copyWith(
+                                color: AppColors.textOnPrimary, fontSize: 13)),
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.25),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          promo.isPercentDiscount
+                              ? '${promo.discountPercent}% OFF'
+                              : promo.isAmountDiscount
+                                  ? '-${formatPrice(promo.discountAmountCents)}'
+                                  : 'OFERTA',
+                          style: AppTypography.bodyMedium.copyWith(
+                              color: AppColors.textOnPrimary,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
           ),
         ],
@@ -161,158 +272,177 @@ class _MenuBoardScreenState extends ConsumerState<MenuBoardScreen> {
     );
   }
 
-  Widget _buildMenuGrid(
-      List<domain_cat.Category> categories, List<domain.Product> allProducts) {
-    return ListView.builder(
-      padding: const EdgeInsets.all(AppSpacing.paddingS),
-      itemCount: categories.length,
-      itemBuilder: (context, index) {
-        final cat = categories[index];
-        final products =
-            allProducts.where((p) => p.categoryId == cat.id).toList();
-        if (products.isEmpty) return const SizedBox();
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Category header
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.paddingS,
-                vertical: AppSpacing.paddingXS,
-              ),
-              margin: const EdgeInsets.only(bottom: 6),
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text(
-                cat.name.toUpperCase(),
-                style: AppTypography.bodyMedium.copyWith(
-                  color: AppColors.textOnPrimary,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 15,
-                ),
-              ),
+  Widget _buildCategorySlide(
+      domain_cat.Category category, List<domain.Product> products) {
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.paddingM),
+      child: Column(
+        children: [
+          // Category header
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.paddingM, vertical: AppSpacing.paddingS),
+            decoration: BoxDecoration(
+              color: AppColors.primary,
+              borderRadius: BorderRadius.circular(8),
             ),
-
-            // Products list
-            ...products.map((product) => Padding(
-                  padding: const EdgeInsets.only(bottom: 3),
+            child: Text(category.name.toUpperCase(),
+                style: AppTypography.headline2.copyWith(
+                    color: AppColors.textOnPrimary, fontSize: 22),
+                textAlign: TextAlign.center),
+          ),
+          const SizedBox(height: AppSpacing.gapM),
+          // Products grid
+          Expanded(
+            child: GridView.builder(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: products.length <= 4 ? 2 : 3,
+                childAspectRatio: 1.8,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+              ),
+              itemCount: products.length,
+              itemBuilder: (_, i) {
+                final p = products[i];
+                return Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.backgroundWhite.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                        color: AppColors.primary.withValues(alpha: 0.3)),
+                  ),
                   child: Row(
                     children: [
-                      // Name
-                      Expanded(
-                        child: Text(
-                          product.name,
-                          style: AppTypography.bodyMedium.copyWith(
-                            color: AppColors.textOnDark,
-                            fontSize: 14,
-                          ),
+                      // Product image
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: SizedBox(
+                          width: 60,
+                          height: 60,
+                          child: p.imageUrl.startsWith('asset:')
+                              ? Image.asset(p.imageUrl.substring(6),
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, _, _) => const Icon(
+                                      Icons.fastfood,
+                                      color: AppColors.textSecondary))
+                              : const Icon(Icons.fastfood,
+                                  color: AppColors.textSecondary),
                         ),
                       ),
-                      // Dots
+                      const SizedBox(width: 12),
                       Expanded(
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 8),
-                          height: 1,
-                          color: AppColors.textSecondary.withValues(alpha: 0.3),
-                        ),
-                      ),
-                      // Price
-                      Text(
-                        formatPrice(product.priceInCents),
-                        style: AppTypography.bodyMedium.copyWith(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 15,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(p.name,
+                                style: AppTypography.bodyMedium.copyWith(
+                                    color: AppColors.textOnDark,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 15),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis),
+                            if (p.description != null)
+                              Text(p.description!,
+                                  style: AppTypography.bodyMedium.copyWith(
+                                      color: AppColors.textSecondary,
+                                      fontSize: 11),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis),
+                            const SizedBox(height: 4),
+                            Text(formatPrice(p.priceInCents),
+                                style: AppTypography.bodyMedium.copyWith(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 16)),
+                          ],
                         ),
                       ),
                     ],
                   ),
-                )),
-
-            const SizedBox(height: AppSpacing.gapM),
-          ],
-        );
-      },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildPromosSidebar(List<Promo> promos) {
-    if (promos.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.local_offer, size: 40, color: AppColors.primary),
-            const SizedBox(height: 8),
-            Text('Ofertas',
-                style: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.textSecondary)),
-          ],
-        ),
-      );
-    }
+  Widget _buildFullMenuSlide(
+      List<domain_cat.Category> categories, List<domain.Product> allProducts) {
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.paddingM),
+      child: Column(
+        children: [
+          Text('MENU COMPLETO',
+              style: AppTypography.headline2.copyWith(
+                color: AppColors.primary,
+                fontSize: 24,
+              )),
+          const SizedBox(height: AppSpacing.gapS),
+          Expanded(
+            child: ListView.builder(
+              itemCount: categories.length,
+              itemBuilder: (_, catIdx) {
+                final cat = categories[catIdx];
+                final products =
+                    allProducts.where((p) => p.categoryId == cat.id).toList();
+                if (products.isEmpty) return const SizedBox();
 
-    return ListView.builder(
-      controller: _promoScroll,
-      padding: const EdgeInsets.all(AppSpacing.paddingS),
-      itemCount: promos.length,
-      itemBuilder: (context, index) {
-        final promo = promos[index];
-        return Container(
-          margin: const EdgeInsets.only(bottom: AppSpacing.gapS),
-          padding: const EdgeInsets.all(AppSpacing.paddingS),
-          decoration: BoxDecoration(
-            color: _parseColor(promo.backgroundColor),
-            borderRadius: BorderRadius.circular(AppSpacing.radiusS),
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      margin: const EdgeInsets.only(bottom: 4),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(cat.name.toUpperCase(),
+                          style: AppTypography.bodyMedium.copyWith(
+                              color: AppColors.textOnPrimary,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13)),
+                    ),
+                    ...products.map((p) => Padding(
+                          padding: const EdgeInsets.only(bottom: 2),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                  child: Text(p.name,
+                                      style: AppTypography.bodyMedium.copyWith(
+                                          color: AppColors.textOnDark,
+                                          fontSize: 13))),
+                              Expanded(
+                                child: Container(
+                                    margin:
+                                        const EdgeInsets.symmetric(horizontal: 6),
+                                    height: 1,
+                                    color: AppColors.textSecondary
+                                        .withValues(alpha: 0.2)),
+                              ),
+                              Text(formatPrice(p.priceInCents),
+                                  style: AppTypography.bodyMedium.copyWith(
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 13)),
+                            ],
+                          ),
+                        )),
+                    const SizedBox(height: 8),
+                  ],
+                );
+              },
+            ),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                promo.title,
-                style: AppTypography.bodyMedium.copyWith(
-                  color: AppColors.textOnPrimary,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 18,
-                ),
-              ),
-              if (promo.subtitle != null)
-                Text(
-                  promo.subtitle!,
-                  style: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.textOnPrimary,
-                    fontSize: 13,
-                  ),
-                ),
-              const SizedBox(height: 6),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  promo.isPercentDiscount
-                      ? '${promo.discountPercent}% OFF'
-                      : promo.isAmountDiscount
-                          ? '-${formatPrice(promo.discountAmountCents)}'
-                          : 'OFERTA',
-                  style: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.textOnPrimary,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
+        ],
+      ),
     );
   }
 
