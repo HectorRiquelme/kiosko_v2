@@ -5,7 +5,9 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../domain/entities/product.dart' as domain;
+import '../../../domain/entities/audit_log_entry.dart';
 import '../../providers/database_provider.dart';
+import '../../providers/auth_provider.dart';
 import 'product_form_screen.dart';
 
 final adminProductsProvider = FutureProvider<List<domain.Product>>((ref) async {
@@ -158,6 +160,15 @@ class ProductListScreen extends ConsumerWidget {
                           await ref
                               .read(productRepositoryProvider)
                               .deleteProduct(product.id);
+                          final user = ref.read(authProvider);
+                          await ref.read(auditLogRepositoryProvider).log(
+                            userId: user?.id ?? 'system',
+                            userName: user?.name ?? 'Sistema',
+                            action: AuditAction.delete,
+                            entityType: AuditEntityType.product,
+                            entityId: product.id,
+                            entityName: product.name,
+                          );
                           ref.invalidate(adminProductsProvider);
                         }
                       },

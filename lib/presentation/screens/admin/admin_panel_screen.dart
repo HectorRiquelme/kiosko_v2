@@ -12,6 +12,7 @@ import 'category_management_screen.dart';
 import 'promo_management_screen.dart';
 import 'user_management_screen.dart';
 import 'audit_log_screen.dart';
+import 'sales_report_screen.dart';
 
 class AdminPanelScreen extends ConsumerWidget {
   const AdminPanelScreen({super.key});
@@ -157,6 +158,17 @@ class AdminPanelScreen extends ConsumerWidget {
               onTap: () {
                 Navigator.push(context, MaterialPageRoute(
                   builder: (_) => const AuditLogScreen(),
+                ));
+              },
+            ),
+            const SizedBox(height: AppSpacing.gapM),
+            _AdminTile(
+              icon: Icons.bar_chart,
+              title: 'Reporte de ventas',
+              subtitle: 'Estadisticas diarias, semanales y mensuales',
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(
+                  builder: (_) => const SalesReportScreen(),
                 ));
               },
             ),

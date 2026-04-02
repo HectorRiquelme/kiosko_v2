@@ -148,6 +148,7 @@ class CheckoutScreen extends ConsumerWidget {
   }
 
   void _navigateToPayment(BuildContext context, PaymentMethod method) {
+    // Checkout already validates cart via ref.watch, but double-check
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => PaymentScreen(paymentMethod: method),
