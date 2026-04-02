@@ -56,11 +56,9 @@ class AdminPanelScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: Padding(
+      body: ListView(
         padding: const EdgeInsets.all(AppSpacing.paddingM),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
+        children: [
             _AdminTile(
               icon: Icons.inventory_2_outlined,
               title: 'Gestion de productos',
@@ -163,7 +161,6 @@ class AdminPanelScreen extends ConsumerWidget {
               },
             ),
           ],
-        ),
       ),
     );
   }
