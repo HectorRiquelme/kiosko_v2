@@ -6,8 +6,15 @@ import '../../domain/entities/order.dart';
 
 class SuccessScreen extends StatelessWidget {
   final Order order;
+  final String? transbankAuth;
+  final String? cardLast4;
 
-  const SuccessScreen({super.key, required this.order});
+  const SuccessScreen({
+    super.key,
+    required this.order,
+    this.transbankAuth,
+    this.cardLast4,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -51,6 +58,23 @@ class SuccessScreen extends StatelessWidget {
                   style: AppTypography.headline1.copyWith(fontSize: 80),
                 ),
               ),
+              if (transbankAuth != null) ...[
+                const SizedBox(height: AppSpacing.gapM),
+                Text(
+                  'Tarjeta: ****${cardLast4 ?? ''}',
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: AppColors.textSecondary,
+                    fontSize: 16,
+                  ),
+                ),
+                Text(
+                  'Auth: $transbankAuth',
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: AppColors.textSecondary,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
               const SizedBox(height: AppSpacing.gapXL),
               Text(
                 'Por favor espera a que tu numero sea llamado',

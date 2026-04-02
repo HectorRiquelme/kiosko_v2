@@ -11,6 +11,7 @@ import 'product_list_screen.dart';
 import 'category_management_screen.dart';
 import 'promo_management_screen.dart';
 import 'user_management_screen.dart';
+import 'audit_log_screen.dart';
 
 class AdminPanelScreen extends ConsumerWidget {
   const AdminPanelScreen({super.key});
@@ -147,6 +148,17 @@ class AdminPanelScreen extends ConsumerWidget {
               onTap: () {
                 Navigator.push(context, MaterialPageRoute(
                   builder: (_) => const UserManagementScreen(),
+                ));
+              },
+            ),
+            const SizedBox(height: AppSpacing.gapM),
+            _AdminTile(
+              icon: Icons.history_outlined,
+              title: 'Registro de actividad',
+              subtitle: 'Ver log de acciones y ventas',
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(
+                  builder: (_) => const AuditLogScreen(),
                 ));
               },
             ),

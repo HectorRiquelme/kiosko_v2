@@ -4,6 +4,8 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/order.dart';
+import '../../data/services/transbank/transbank_service.dart';
+import '../providers/cart_provider.dart';
 import '../providers/order_provider.dart';
 import 'success_screen.dart';
 
@@ -18,6 +20,7 @@ class PaymentScreen extends ConsumerStatefulWidget {
 
 class _PaymentScreenState extends ConsumerState<PaymentScreen> {
   bool _processing = false;
+  String _statusMessage = '';
 
   String get _methodLabel {
     switch (widget.paymentMethod) {
@@ -54,12 +57,73 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
     );
 
     if (confirmed != true) return;
-    await _processPayment();
+
+    if (widget.paymentMethod == PaymentMethod.card) {
+      await _processCardPayment();
+    } else {
+      await _processPayment();
+    }
   }
 
-  Future<void> _processPayment() async {
+  Future<void> _processCardPayment() async {
     if (_processing) return;
-    setState(() => _processing = true);
+    setState(() {
+      _processing = true;
+      _statusMessage = 'Conectando con terminal...';
+    });
+
+    final cart = ref.read(cartProvider);
+    final totalInCents = cart.totalInCents;
+    final tempOrderId = 'pre_${DateTime.now().microsecondsSinceEpoch}';
+
+    setState(() => _statusMessage = 'Esperando pago en terminal...');
+
+    final tbkResponse = await TransbankService.processPayment(
+      amountInCents: totalInCents,
+      orderId: tempOrderId,
+    );
+
+    if (!mounted) return;
+
+    if (!tbkResponse.isApproved) {
+      setState(() {
+        _processing = false;
+        _statusMessage = '';
+      });
+
+      final errorMsg = tbkResponse.result == TransbankResult.cancelled
+          ? 'Pago cancelado'
+          : tbkResponse.message ?? 'Pago rechazado';
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMsg),
+          backgroundColor: tbkResponse.result == TransbankResult.cancelled
+              ? AppColors.warning
+              : AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    // Card payment approved — place order
+    setState(() => _statusMessage = 'Pago aprobado! Registrando pedido...');
+    await _processPayment(
+      transbankAuth: tbkResponse.authorizationCode,
+      cardLast4: tbkResponse.cardLast4,
+    );
+  }
+
+  Future<void> _processPayment({
+    String? transbankAuth,
+    String? cardLast4,
+  }) async {
+    if (_processing && widget.paymentMethod != PaymentMethod.card) {
+      return;
+    }
+    if (widget.paymentMethod != PaymentMethod.card) {
+      setState(() => _processing = true);
+    }
 
     try {
       final order = await ref
@@ -69,14 +133,21 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
       if (mounted) {
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(
-            builder: (_) => SuccessScreen(order: order),
+            builder: (_) => SuccessScreen(
+              order: order,
+              transbankAuth: transbankAuth,
+              cardLast4: cardLast4,
+            ),
           ),
           (route) => route.isFirst,
         );
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _processing = false);
+        setState(() {
+          _processing = false;
+          _statusMessage = '';
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error al procesar el pago: $e'),
@@ -113,11 +184,25 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
               const SizedBox(height: AppSpacing.gapM),
               Text(
                 _processing
-                    ? 'Procesando pago...'
+                    ? (_statusMessage.isEmpty
+                        ? 'Procesando pago...'
+                        : _statusMessage)
                     : 'Pagar con $_methodLabel',
                 style: AppTypography.headline2,
                 textAlign: TextAlign.center,
               ),
+              if (widget.paymentMethod == PaymentMethod.card && !_processing)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    'Se usara el terminal Transbank conectado',
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.textSecondary,
+                      fontSize: 16,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
               const SizedBox(height: AppSpacing.gapXL),
               if (!_processing)
                 ElevatedButton(

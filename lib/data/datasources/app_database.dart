@@ -76,13 +76,25 @@ class OrderItems extends Table {
   IntColumn get priceInCents => integer()();
 }
 
-@DriftDatabase(tables: [Users, Categories, Products, Promos, Orders, OrderItems])
+class AuditLogs extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get userId => text()();
+  TextColumn get userName => text()();
+  TextColumn get action => text()(); // create, update, delete, sale, login, logout
+  TextColumn get targetType => text()(); // product, category, promo, user, order
+  TextColumn get targetId => text()();
+  TextColumn get targetName => text()();
+  TextColumn get details => text().withDefault(const Constant(''))();
+  DateTimeColumn get createdAt => dateTime()();
+}
+
+@DriftDatabase(tables: [Users, Categories, Products, Promos, Orders, OrderItems, AuditLogs])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration {
@@ -96,6 +108,9 @@ class AppDatabase extends _$AppDatabase {
           await m.createTable(users);
           await m.createTable(promos);
           await _seedUsers();
+        }
+        if (from < 3) {
+          await m.createTable(auditLogs);
         }
       },
     );
