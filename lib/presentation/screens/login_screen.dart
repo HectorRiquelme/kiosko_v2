@@ -8,6 +8,7 @@ import '../providers/auth_provider.dart';
 import 'home_screen.dart';
 import 'admin/admin_panel_screen.dart';
 import 'kitchen/kitchen_screen.dart';
+import 'order_display_screen.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -152,6 +153,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   style: AppTypography.bodyMedium.copyWith(
                     color: AppColors.primary,
                     fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.gapS),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(
+                      builder: (_) => const OrderDisplayScreen(),
+                    ),
+                  );
+                },
+                child: Text(
+                  'Pantalla de pedidos',
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: AppColors.textSecondary,
+                    fontSize: 16,
                   ),
                 ),
               ),
