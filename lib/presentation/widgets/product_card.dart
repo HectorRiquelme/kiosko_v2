@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'smart_image.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
@@ -68,20 +68,9 @@ class _ProductCardState extends State<ProductCard> {
                     child: Center(
                       child: Padding(
                         padding: const EdgeInsets.all(AppSpacing.paddingS),
-                        child: CachedNetworkImage(
+                        child: SmartImage(
                           imageUrl: widget.imageUrl,
                           fit: BoxFit.contain,
-                          placeholder: (context, url) => const Center(
-                            child: CircularProgressIndicator(
-                              color: AppColors.primary,
-                              strokeWidth: 2,
-                            ),
-                          ),
-                          errorWidget: (context, url, error) => const Icon(
-                            Icons.fastfood,
-                            color: AppColors.textSecondary,
-                            size: 36,
-                          ),
                         ),
                       ),
                     ),

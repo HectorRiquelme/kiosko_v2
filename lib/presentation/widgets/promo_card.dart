@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'smart_image.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
@@ -98,20 +98,10 @@ class _PromoCardState extends State<PromoCard> {
                     topRight: Radius.circular(AppSpacing.radiusM),
                     bottomRight: Radius.circular(AppSpacing.radiusM),
                   ),
-                  child: CachedNetworkImage(
+                  child: SmartImage(
                     imageUrl: widget.imageUrl,
                     fit: BoxFit.cover,
-                    placeholder: (context, url) => const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.textOnPrimary,
-                        strokeWidth: 2,
-                      ),
-                    ),
-                    errorWidget: (context, url, error) => const Icon(
-                      Icons.local_offer,
-                      color: AppColors.textOnPrimary,
-                      size: 36,
-                    ),
+                    fallbackIcon: Icons.local_offer,
                   ),
                 ),
               ),

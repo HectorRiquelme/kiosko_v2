@@ -140,62 +140,58 @@ class AppDatabase extends _$AppDatabase {
     await batch((b) {
       b.insertAll(categories, [
         CategoriesCompanion.insert(
-            id: 'cafe', name: 'Cafe', imageUrl: 'https://placehold.co/100'),
+            id: 'cafe', name: 'Cafe', imageUrl: 'asset:assets/categories/cafe.png'),
         CategoriesCompanion.insert(
-            id: 'bebidas',
-            name: 'Bebidas',
-            imageUrl: 'https://placehold.co/100',
+            id: 'bebidas', name: 'Bebidas',
+            imageUrl: 'asset:assets/categories/bebidas.png',
             sortOrder: const Value(1)),
         CategoriesCompanion.insert(
-            id: 'pasteles',
-            name: 'Pasteles',
-            imageUrl: 'https://placehold.co/100',
+            id: 'pasteles', name: 'Pasteles',
+            imageUrl: 'asset:assets/categories/pasteles.png',
             sortOrder: const Value(2)),
         CategoriesCompanion.insert(
-            id: 'snacks',
-            name: 'Snacks',
-            imageUrl: 'https://placehold.co/100',
+            id: 'snacks', name: 'Snacks',
+            imageUrl: 'asset:assets/categories/snacks.png',
             sortOrder: const Value(3)),
         CategoriesCompanion.insert(
-            id: 'combos',
-            name: 'Combos',
-            imageUrl: 'https://placehold.co/100',
+            id: 'combos', name: 'Combos',
+            imageUrl: 'asset:assets/categories/combos.png',
             sortOrder: const Value(4)),
       ]);
 
       b.insertAll(products, [
         ProductsCompanion.insert(
-            id: 'cap', name: 'Cappuccino', imageUrl: 'https://placehold.co/150',
+            id: 'cap', name: 'Cappuccino', imageUrl: 'asset:assets/products/cappuccino.png',
             priceInCents: 350000, categoryId: 'cafe'),
         ProductsCompanion.insert(
-            id: 'lat', name: 'Latte', imageUrl: 'https://placehold.co/150',
+            id: 'lat', name: 'Latte', imageUrl: 'asset:assets/products/latte.png',
             priceInCents: 380000, categoryId: 'cafe'),
         ProductsCompanion.insert(
-            id: 'ame', name: 'Americano', imageUrl: 'https://placehold.co/150',
+            id: 'ame', name: 'Americano', imageUrl: 'asset:assets/products/americano.png',
             priceInCents: 280000, categoryId: 'cafe'),
         ProductsCompanion.insert(
-            id: 'moc', name: 'Mocha', imageUrl: 'https://placehold.co/150',
+            id: 'moc', name: 'Mocha', imageUrl: 'asset:assets/products/mocha.png',
             priceInCents: 420000, categoryId: 'cafe'),
         ProductsCompanion.insert(
-            id: 'esp', name: 'Espresso', imageUrl: 'https://placehold.co/150',
+            id: 'esp', name: 'Espresso', imageUrl: 'asset:assets/products/espresso.png',
             priceInCents: 250000, categoryId: 'cafe'),
         ProductsCompanion.insert(
-            id: 'fla', name: 'Flat White', imageUrl: 'https://placehold.co/150',
+            id: 'fla', name: 'Flat White', imageUrl: 'asset:assets/products/flat_white.png',
             priceInCents: 390000, categoryId: 'cafe'),
         ProductsCompanion.insert(
-            id: 'jug', name: 'Jugo Natural', imageUrl: 'https://placehold.co/150',
+            id: 'jug', name: 'Jugo Natural', imageUrl: 'asset:assets/products/jugo_natural.png',
             priceInCents: 320000, categoryId: 'bebidas'),
         ProductsCompanion.insert(
-            id: 'lim', name: 'Limonada', imageUrl: 'https://placehold.co/150',
+            id: 'lim', name: 'Limonada', imageUrl: 'asset:assets/products/limonada.png',
             priceInCents: 280000, categoryId: 'bebidas'),
         ProductsCompanion.insert(
-            id: 'tor', name: 'Torta Chocolate', imageUrl: 'https://placehold.co/150',
+            id: 'tor', name: 'Torta Chocolate', imageUrl: 'asset:assets/products/torta_chocolate.png',
             priceInCents: 450000, categoryId: 'pasteles'),
         ProductsCompanion.insert(
-            id: 'cro', name: 'Croissant', imageUrl: 'https://placehold.co/150',
+            id: 'cro', name: 'Croissant', imageUrl: 'asset:assets/products/croissant.png',
             priceInCents: 280000, categoryId: 'snacks'),
         ProductsCompanion.insert(
-            id: 'com1', name: 'Combo Cafe + Torta', imageUrl: 'https://placehold.co/150',
+            id: 'com1', name: 'Combo Cafe + Torta', imageUrl: 'asset:assets/products/combo.png',
             priceInCents: 650000, categoryId: 'combos'),
       ]);
     });
