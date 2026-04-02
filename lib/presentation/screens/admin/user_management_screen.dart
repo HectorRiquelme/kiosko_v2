@@ -87,7 +87,7 @@ class UserManagementScreen extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    Text('PIN: ${user.pin}',
+                    Text('PIN: ****',
                         style: AppTypography.bodyMedium.copyWith(
                             fontSize: 14, color: AppColors.textSecondary)),
                     const SizedBox(width: 8),

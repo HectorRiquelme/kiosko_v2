@@ -53,8 +53,6 @@ class _ProductCardState extends State<ProductCard> {
         onTapUp: (_) => setState(() => _scale = 1.0),
         onTapCancel: () => setState(() => _scale = 1.0),
         child: Container(
-          width: AppSpacing.productCardWidth,
-          height: AppSpacing.productCardHeight,
           decoration: BoxDecoration(
             color: AppColors.backgroundWhite,
             borderRadius: BorderRadius.circular(AppSpacing.radiusL),
@@ -82,7 +80,7 @@ class _ProductCardState extends State<ProductCard> {
                           errorWidget: (context, url, error) => const Icon(
                             Icons.fastfood,
                             color: AppColors.textSecondary,
-                            size: 60,
+                            size: 36,
                           ),
                         ),
                       ),

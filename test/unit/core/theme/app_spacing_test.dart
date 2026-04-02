@@ -23,18 +23,18 @@ void main() {
       expect(AppSpacing.radiusL, lessThan(AppSpacing.radiusXL));
     });
 
-    test('category card size is 195', () {
-      expect(AppSpacing.categoryCardSize, equals(195.0));
+    test('category card size is 110', () {
+      expect(AppSpacing.categoryCardSize, equals(110.0));
     });
 
     test('product card dimensions are correct', () {
-      expect(AppSpacing.productCardWidth, equals(260.0));
-      expect(AppSpacing.productCardHeight, equals(240.0));
+      expect(AppSpacing.productCardWidth, equals(170.0));
+      expect(AppSpacing.productCardHeight, equals(200.0));
     });
 
     test('promo card dimensions are correct', () {
-      expect(AppSpacing.promoCardWidth, equals(453.0));
-      expect(AppSpacing.promoCardHeight, equals(195.0));
+      expect(AppSpacing.promoCardWidth, equals(300.0));
+      expect(AppSpacing.promoCardHeight, equals(120.0));
     });
 
     test('all values are positive', () {

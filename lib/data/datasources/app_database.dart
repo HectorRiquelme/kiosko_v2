@@ -3,6 +3,7 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import '../../core/utils/pin_hasher.dart';
 
 part 'app_database.g.dart';
 
@@ -122,13 +123,13 @@ class AppDatabase extends _$AppDatabase {
         UsersCompanion.insert(
           id: 'admin1',
           name: 'Administrador',
-          pin: '1234',
+          pin: PinHasher.hash('1234'),
           role: 'admin',
         ),
         UsersCompanion.insert(
           id: 'worker1',
           name: 'Cocina 1',
-          pin: '0000',
+          pin: PinHasher.hash('0000'),
           role: 'worker',
         ),
       ]);

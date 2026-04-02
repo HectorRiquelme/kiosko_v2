@@ -76,7 +76,7 @@ class _CategoryCardState extends State<CategoryCard> {
                       errorWidget: (context, url, error) => const Icon(
                         Icons.restaurant,
                         color: AppColors.textOnPrimary,
-                        size: 60,
+                        size: 36,
                       ),
                     ),
                   ),

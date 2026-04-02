@@ -48,10 +48,16 @@ void main() {
 
     testWidgets('shows header with title', (tester) async {
       await mockNetworkImagesFor(() async {
+        tester.view.physicalSize = const Size(800, 1200);
+        tester.view.devicePixelRatio = 1.0;
+
         await tester.pumpWidget(buildTestWidget());
         await tester.pump(const Duration(milliseconds: 500));
         await tester.pump(const Duration(milliseconds: 500));
         expect(find.text('Kiosko'), findsOneWidget);
+
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
       });
     });
 

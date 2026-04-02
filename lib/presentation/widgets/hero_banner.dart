@@ -90,7 +90,7 @@ class HeroBanner extends StatelessWidget {
                 errorWidget: (context, url, error) => const Icon(
                   Icons.fastfood,
                   color: AppColors.textOnDark,
-                  size: 80,
+                  size: 48,
                 ),
               ),
             ),

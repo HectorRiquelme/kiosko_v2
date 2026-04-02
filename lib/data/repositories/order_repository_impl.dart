@@ -13,13 +13,26 @@ class OrderRepositoryImpl implements OrderRepository {
 
   @override
   Future<domain.Order> placeOrder(domain.Order order) async {
+    // Use transaction to atomically assign queue number + insert order
+    late int assignedQueue;
     await _db.transaction(() async {
+      // Get next queue number inside transaction to prevent duplicates
+      final today = DateTime.now();
+      final startOfDay = DateTime(today.year, today.month, today.day);
+      final startEpoch = startOfDay.millisecondsSinceEpoch ~/ 1000;
+      final result = await _db.customSelect(
+        'SELECT COALESCE(MAX(queue_number), 0) + 1 AS next FROM orders '
+        'WHERE created_at >= ?',
+        variables: [Variable.withInt(startEpoch)],
+      ).getSingle();
+      assignedQueue = result.read<int>('next');
+
       await _db.into(_db.orders).insert(OrdersCompanion(
             id: Value(order.id),
             totalInCents: Value(order.totalInCents),
             status: Value(order.status.name),
             paymentMethod: Value(order.paymentMethod.name),
-            queueNumber: Value(order.queueNumber),
+            queueNumber: Value(assignedQueue),
             createdAt: Value(order.createdAt),
           ));
 
@@ -32,7 +45,15 @@ class OrderRepositoryImpl implements OrderRepository {
             ));
       }
     });
-    return order;
+    return domain.Order(
+      id: order.id,
+      items: order.items,
+      totalInCents: order.totalInCents,
+      status: order.status,
+      paymentMethod: order.paymentMethod,
+      queueNumber: assignedQueue,
+      createdAt: order.createdAt,
+    );
   }
 
   @override

@@ -4,7 +4,9 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/entities/user.dart';
+import '../../domain/entities/audit_log_entry.dart';
 import '../providers/auth_provider.dart';
+import '../providers/database_provider.dart';
 import 'home_screen.dart';
 import 'admin/admin_panel_screen.dart';
 import 'kitchen/kitchen_screen.dart';
@@ -80,6 +82,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() => _loading = false);
 
     if (!success) {
+      // Log failed login attempt
+      ref.read(auditLogRepositoryProvider).log(
+        userId: 'unknown',
+        userName: 'Desconocido',
+        action: AuditAction.login,
+        entityType: AuditEntityType.user,
+        entityId: 'unknown',
+        entityName: 'Intento fallido',
+        details: 'PIN incorrecto',
+      );
       setState(() {
         _error = true;
         _pin = '';
@@ -114,15 +126,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundGrey,
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.paddingXL),
-          child: Column(
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.paddingXL,
+              vertical: AppSpacing.paddingM,
+            ),
+            child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               // Logo / Title
-              const Icon(Icons.storefront, size: 80, color: AppColors.primary),
-              const SizedBox(height: AppSpacing.gapM),
+              const Icon(Icons.storefront, size: 56, color: AppColors.primary),
+              const SizedBox(height: AppSpacing.gapS),
               Text('Kiosko POS', style: AppTypography.headline2),
               const SizedBox(height: AppSpacing.gapS),
               Text('Ingresa tu PIN', style: AppTypography.bodyMedium),
@@ -203,6 +219,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
         ),
       ),
+      ),
     );
   }
 
@@ -218,7 +235,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ['C', '0', '⌫'],
           ])
             Padding(
-              padding: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.only(bottom: 8),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: row.map((key) {
@@ -255,8 +272,8 @@ class _NumpadButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 72,
-        height: 72,
+        width: 64,
+        height: 64,
         decoration: BoxDecoration(
           color: isSpecial
               ? AppColors.backgroundWhite

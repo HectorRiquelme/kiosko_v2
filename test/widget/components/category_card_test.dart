@@ -42,7 +42,7 @@ void main() {
       });
     });
 
-    testWidgets('has correct size 195x195', (tester) async {
+    testWidgets('has correct size 110x110', (tester) async {
       await mockNetworkImagesFor(() async {
         await tester.pumpWidget(
           MaterialApp(
@@ -63,8 +63,8 @@ void main() {
             matching: find.byType(Container),
           ).first,
         );
-        expect(container.constraints?.maxWidth, equals(195.0));
-        expect(container.constraints?.maxHeight, equals(195.0));
+        expect(container.constraints?.maxWidth, equals(110.0));
+        expect(container.constraints?.maxHeight, equals(110.0));
       });
     });
 

@@ -29,9 +29,13 @@ class ProductRepositoryImpl implements ProductRepository {
 
   @override
   Future<List<domain.Product>> searchProducts(String query) async {
+    // Escape special LIKE characters to prevent injection
+    final escaped = query
+        .replaceAll('%', r'\%')
+        .replaceAll('_', r'\_');
     final rows = await (_db.select(_db.products)
           ..where((p) =>
-              p.name.like('%$query%') & p.available.equals(true)))
+              p.name.like('%$escaped%') & p.available.equals(true)))
         .get();
     return rows.map((r) => r.toEntity()).toList();
   }

@@ -45,7 +45,6 @@ class _PromoCardState extends State<PromoCard> {
         duration: AppDurations.instant,
         curve: AppCurves.sharp,
         child: Container(
-          width: AppSpacing.promoCardWidth,
           height: AppSpacing.promoCardHeight,
           decoration: BoxDecoration(
             color: widget.backgroundColor,
@@ -55,21 +54,21 @@ class _PromoCardState extends State<PromoCard> {
             children: [
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.all(AppSpacing.paddingM),
+                  padding: const EdgeInsets.all(AppSpacing.paddingS),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
                         widget.titleLine1,
-                        style: AppTypography.promoTitle.copyWith(fontSize: 36),
+                        style: AppTypography.promoTitle,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
                         widget.titleLine2,
                         style:
-                            AppTypography.promoSubtitle.copyWith(fontSize: 28),
+                            AppTypography.promoSubtitle,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -111,7 +110,7 @@ class _PromoCardState extends State<PromoCard> {
                     errorWidget: (context, url, error) => const Icon(
                       Icons.local_offer,
                       color: AppColors.textOnPrimary,
-                      size: 60,
+                      size: 36,
                     ),
                   ),
                 ),

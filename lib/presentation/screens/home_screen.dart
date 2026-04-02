@@ -80,7 +80,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             SliverToBoxAdapter(child: _buildCategoriesRow()),
             SliverToBoxAdapter(child: _buildPromoSection()),
             SliverToBoxAdapter(child: _buildSectionTitle('Productos')),
-            _buildProductsGrid(3),
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.paddingM),
+              sliver: _buildProductsGrid(3),
+            ),
             const SliverToBoxAdapter(
               child: SizedBox(height: AppSpacing.bottomCartBarHeight + 20),
             ),
@@ -135,7 +138,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   SliverToBoxAdapter(child: _buildHeroBanner()),
                   SliverToBoxAdapter(child: _buildPromoSection()),
                   SliverToBoxAdapter(child: _buildSectionTitle('Productos')),
-                  _buildProductsGrid(4),
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.paddingM),
+                    sliver: _buildProductsGrid(4),
+                  ),
                   const SliverToBoxAdapter(
                     child:
                         SizedBox(height: AppSpacing.bottomCartBarHeight + 20),
@@ -326,8 +332,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       data: (products) => SliverGrid(
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: crossAxisCount,
-          childAspectRatio:
-              AppSpacing.productCardWidth / AppSpacing.productCardHeight,
+          childAspectRatio: 0.85,
           crossAxisSpacing: AppSpacing.gapM,
           mainAxisSpacing: AppSpacing.gapM,
         ),
@@ -353,8 +358,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       loading: () => SliverGrid(
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: crossAxisCount,
-          childAspectRatio:
-              AppSpacing.productCardWidth / AppSpacing.productCardHeight,
+          childAspectRatio: 0.85,
         ),
         delegate: SliverChildBuilderDelegate(
           (_, _) => const Center(
@@ -366,8 +370,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       error: (_, _) => SliverGrid(
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: crossAxisCount,
-          childAspectRatio:
-              AppSpacing.productCardWidth / AppSpacing.productCardHeight,
+          childAspectRatio: 0.85,
         ),
         delegate: SliverChildBuilderDelegate(
           (_, _) => const Center(child: Text('Error al cargar productos')),
