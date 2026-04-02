@@ -4,7 +4,12 @@ import 'package:intl/intl.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/database_provider.dart';
+import '../login_screen.dart';
+import 'product_list_screen.dart';
+import 'category_management_screen.dart';
+import 'promo_management_screen.dart';
 
 class AdminPanelScreen extends ConsumerWidget {
   const AdminPanelScreen({super.key});
@@ -16,6 +21,8 @@ class AdminPanelScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(authProvider);
+
     return Scaffold(
       backgroundColor: AppColors.backgroundGrey,
       appBar: AppBar(
@@ -25,6 +32,26 @@ class AdminPanelScreen extends ConsumerWidget {
             style: AppTypography.headline2
                 .copyWith(color: AppColors.textOnPrimary, fontSize: 24)),
         elevation: 0,
+        actions: [
+          if (user != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Center(
+                child: Text(user.name,
+                    style: const TextStyle(fontSize: 14)),
+              ),
+            ),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () {
+              ref.read(authProvider.notifier).logout();
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+                (route) => false,
+              );
+            },
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(AppSpacing.paddingM),
@@ -36,9 +63,31 @@ class AdminPanelScreen extends ConsumerWidget {
               title: 'Gestion de productos',
               subtitle: 'Agregar, editar o eliminar productos',
               onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Proximamente')),
-                );
+                Navigator.push(context, MaterialPageRoute(
+                  builder: (_) => const ProductListScreen(),
+                ));
+              },
+            ),
+            const SizedBox(height: AppSpacing.gapM),
+            _AdminTile(
+              icon: Icons.category_outlined,
+              title: 'Gestion de categorias',
+              subtitle: 'Crear, reordenar o eliminar categorias',
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(
+                  builder: (_) => const CategoryManagementScreen(),
+                ));
+              },
+            ),
+            const SizedBox(height: AppSpacing.gapM),
+            _AdminTile(
+              icon: Icons.local_offer_outlined,
+              title: 'Gestion de ofertas',
+              subtitle: 'Crear y administrar promociones',
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(
+                  builder: (_) => const PromoManagementScreen(),
+                ));
               },
             ),
             const SizedBox(height: AppSpacing.gapM),
@@ -68,8 +117,8 @@ class AdminPanelScreen extends ConsumerWidget {
                                         style: AppTypography.bodyMedium
                                             .copyWith(
                                                 fontWeight: FontWeight.w700)),
-                                    title: Text(
-                                        formatPrice(order.totalInCents)),
+                                    title:
+                                        Text(formatPrice(order.totalInCents)),
                                     subtitle: Text(order.status.name),
                                     trailing: Text(DateFormat('HH:mm')
                                         .format(order.createdAt)),
@@ -86,18 +135,6 @@ class AdminPanelScreen extends ConsumerWidget {
                     ),
                   );
                 }
-              },
-            ),
-            const SizedBox(height: AppSpacing.gapM),
-            _AdminTile(
-              icon: Icons.print_outlined,
-              title: 'Impresion de recibos',
-              subtitle: 'Configurar impresora de recibos',
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                      content: Text('Soporte de impresion proximamente')),
-                );
               },
             ),
           ],

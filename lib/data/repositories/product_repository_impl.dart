@@ -58,9 +58,37 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
+  Future<void> updateProduct(domain.Product product) async {
+    await (_db.update(_db.products)..where((p) => p.id.equals(product.id)))
+        .write(product.toCompanion());
+  }
+
+  @override
+  Future<void> deleteProduct(String id) async {
+    await (_db.delete(_db.products)..where((p) => p.id.equals(id))).go();
+  }
+
+  @override
+  Future<void> toggleProductAvailability(String id, bool available) async {
+    await (_db.update(_db.products)..where((p) => p.id.equals(id)))
+        .write(ProductsCompanion(available: Value(available)));
+  }
+
+  @override
   Future<void> insertCategory(domain.Category category) async {
     await _db
         .into(_db.categories)
         .insertOnConflictUpdate(category.toCompanion());
+  }
+
+  @override
+  Future<void> updateCategory(domain.Category category) async {
+    await (_db.update(_db.categories)..where((c) => c.id.equals(category.id)))
+        .write(category.toCompanion());
+  }
+
+  @override
+  Future<void> deleteCategory(String id) async {
+    await (_db.delete(_db.categories)..where((c) => c.id.equals(id))).go();
   }
 }

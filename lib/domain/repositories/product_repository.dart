@@ -8,5 +8,10 @@ abstract class ProductRepository {
   Future<Product?> getProductById(String id);
   Future<List<Category>> getAllCategories();
   Future<void> insertProduct(Product product);
+  Future<void> updateProduct(Product product);
+  Future<void> deleteProduct(String id);
+  Future<void> toggleProductAvailability(String id, bool available);
   Future<void> insertCategory(Category category);
+  Future<void> updateCategory(Category category);
+  Future<void> deleteCategory(String id);
 }
