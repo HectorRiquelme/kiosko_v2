@@ -3,6 +3,15 @@
 ## Quick Recovery
 If starting a new session, say: "continua con kiosko v2" and Claude will have full context from this file.
 
+### Auto-run mode
+When the user says **"ejecuta todas las fases"** or **"continua todas las fases"** or **"fases 2-7"**:
+1. Read this CLAUDE.md to recover context
+2. Execute ALL pending phases (2 through 7) sequentially without stopping
+3. For each phase: implement code, write tests, run `flutter test`, fix failures, run `flutter analyze`
+4. After ALL phases complete: commit + push to GitHub, update this CLAUDE.md marking completed phases
+5. Do NOT ask questions — use defaults, fix errors autonomously, skip if blocked after 3 attempts (leave TODO comment)
+6. Keep a running todo list to track progress across phases
+
 ## Project Overview
 Self-service kiosk POS for food ordering (cafeteria, restaurant, etc.). Based on Figma "Quickbite Kiosk UI/UX" design. Must work on tablets (portrait + landscape), fully offline via LAN.
 
