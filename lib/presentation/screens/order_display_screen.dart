@@ -49,7 +49,7 @@ class _OrderDisplayScreenState extends ConsumerState<OrderDisplayScreen> {
     final ordersAsync = ref.watch(displayOrdersProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
+      backgroundColor: AppColors.backgroundWarm,
       body: Column(
         children: [
           // Header
@@ -59,7 +59,11 @@ class _OrderDisplayScreenState extends ConsumerState<OrderDisplayScreen> {
               horizontal: AppSpacing.paddingXL,
               vertical: AppSpacing.paddingM,
             ),
-            color: AppColors.primary,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFFFF9B17), Color(0xFFFF7B00)],
+              ),
+            ),
             child: Wrap(
               alignment: WrapAlignment.spaceBetween,
               crossAxisAlignment: WrapCrossAlignment.center,
@@ -107,7 +111,7 @@ class _OrderDisplayScreenState extends ConsumerState<OrderDisplayScreen> {
                       ),
                     ),
                     // Divider
-                    Container(width: 2, color: AppColors.textSecondary),
+                    Container(width: 1, color: AppColors.border.withValues(alpha: 0.3)),
                     // Ready section
                     Expanded(
                       child: _DisplaySection(
@@ -185,7 +189,7 @@ class _DisplaySection extends StatelessWidget {
             ],
           ),
         ),
-        const Divider(color: AppColors.textSecondary, height: 1),
+        Divider(color: AppColors.border.withValues(alpha: 0.2), height: 1),
         // Queue numbers grid
         Expanded(
           child: orders.isEmpty
@@ -268,22 +272,30 @@ class _QueueNumberBadgeState extends State<_QueueNumberBadge>
             width: 120,
             height: 120,
             decoration: BoxDecoration(
-              color: widget.color,
+              color: widget.highlight
+                  ? widget.color
+                  : AppColors.backgroundWhite,
               borderRadius: BorderRadius.circular(AppSpacing.radiusM),
-              boxShadow: widget.highlight
-                  ? [
-                      BoxShadow(
-                        color: widget.color.withValues(alpha: 0.5),
-                        blurRadius: 20,
-                        spreadRadius: 2,
-                      )
-                    ]
-                  : null,
+              border: widget.highlight
+                  ? null
+                  : Border.all(color: widget.color, width: 3),
+              boxShadow: [
+                BoxShadow(
+                  color: widget.color.withValues(alpha: widget.highlight ? 0.4 : 0.15),
+                  blurRadius: widget.highlight ? 20 : 8,
+                  spreadRadius: widget.highlight ? 2 : 0,
+                ),
+              ],
             ),
             child: Center(
               child: Text(
                 '#${widget.number}',
-                style: AppTypography.headline1.copyWith(fontSize: 42),
+                style: AppTypography.headline1.copyWith(
+                  fontSize: 42,
+                  color: widget.highlight
+                      ? AppColors.textOnPrimary
+                      : widget.color,
+                ),
               ),
             ),
           ),

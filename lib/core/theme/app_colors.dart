@@ -8,8 +8,10 @@ abstract class AppColors {
 
   // === BACKGROUNDS ===
   static const Color backgroundWhite = Color(0xFFFFFFFF);
-  static const Color backgroundDark = Color(0xFF000000);
+  static const Color backgroundDark = Color(0xFF1E1E2C);
   static const Color backgroundGrey = Color(0xFFF5F5F5);
+  static const Color backgroundWarm = Color(0xFFFFF8F0);
+  static const Color backgroundCream = Color(0xFFFAF6F1);
 
   // === PROMO CARDS ===
   static const Color promoRed = Color(0xFFAC0E02);

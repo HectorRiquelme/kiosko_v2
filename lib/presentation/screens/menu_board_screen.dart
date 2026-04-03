@@ -94,29 +94,33 @@ class _MenuBoardScreenState extends ConsumerState<MenuBoardScreen> {
     final promosAsync = ref.watch(menuBoardPromosProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
+      backgroundColor: AppColors.backgroundWarm,
       body: Column(
         children: [
-          // Header
+          // Header - warm gradient
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.paddingM,
               vertical: AppSpacing.paddingS,
             ),
-            color: AppColors.primary,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFFFF9B17), Color(0xFFFF7B00)],
+              ),
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('KIOSKO POS',
+                Text('☕ KIOSKO',
                     style: AppTypography.headline2.copyWith(
                         color: AppColors.textOnPrimary, fontSize: 20)),
-                Text('MENU',
+                Text('NUESTRO MENU',
                     style: AppTypography.headline2.copyWith(
-                        color: AppColors.textOnPrimary, fontSize: 20)),
+                        color: AppColors.textOnPrimary, fontSize: 18)),
                 Text(_timeString,
                     style: AppTypography.headline2.copyWith(
-                        color: AppColors.textOnPrimary, fontSize: 20)),
+                        color: AppColors.textOnPrimary.withValues(alpha: 0.8), fontSize: 16)),
               ],
             ),
           ),
@@ -143,7 +147,7 @@ class _MenuBoardScreenState extends ConsumerState<MenuBoardScreen> {
           // Page indicator dots
           if (_totalPages > 1)
             Container(
-              color: AppColors.backgroundDark,
+              color: AppColors.backgroundCream,
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -308,10 +312,15 @@ class _MenuBoardScreenState extends ConsumerState<MenuBoardScreen> {
                 return Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.backgroundWhite.withValues(alpha: 0.08),
+                    color: AppColors.backgroundWhite,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                        color: AppColors.primary.withValues(alpha: 0.3)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.shadow.withValues(alpha: 0.08),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: Row(
                     children: [
@@ -339,7 +348,7 @@ class _MenuBoardScreenState extends ConsumerState<MenuBoardScreen> {
                           children: [
                             Text(p.name,
                                 style: AppTypography.bodyMedium.copyWith(
-                                    color: AppColors.textOnDark,
+                                    color: AppColors.textPrimary,
                                     fontWeight: FontWeight.w600,
                                     fontSize: 15),
                                 maxLines: 1,
@@ -417,7 +426,7 @@ class _MenuBoardScreenState extends ConsumerState<MenuBoardScreen> {
                               Expanded(
                                   child: Text(p.name,
                                       style: AppTypography.bodyMedium.copyWith(
-                                          color: AppColors.textOnDark,
+                                          color: AppColors.textPrimary,
                                           fontSize: 13))),
                               Expanded(
                                 child: Container(
