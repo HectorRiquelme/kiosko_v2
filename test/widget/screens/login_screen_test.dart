@@ -25,10 +25,10 @@ void main() {
       );
     }
 
-    testWidgets('shows PIN input title', (tester) async {
+    testWidgets('shows branding', (tester) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pump();
-      expect(find.text('Ingresa tu PIN'), findsOneWidget);
+      expect(find.text('KIOSKO'), findsOneWidget);
     });
 
     testWidgets('shows numpad buttons', (tester) async {
@@ -39,23 +39,18 @@ void main() {
       }
     });
 
-    testWidgets('shows kiosk mode button', (tester) async {
+    testWidgets('shows mode buttons', (tester) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pump();
-      expect(find.text('Kiosko'), findsOneWidget);
-    });
-
-    testWidgets('shows Kiosko POS title', (tester) async {
-      await tester.pumpWidget(buildTestWidget());
-      await tester.pump();
-      expect(find.text('Kiosko POS'), findsOneWidget);
+      expect(find.text('Ordenar'), findsOneWidget);
+      expect(find.text('Pedidos'), findsOneWidget);
+      expect(find.text('Menu'), findsOneWidget);
     });
 
     testWidgets('shows error on wrong PIN', (tester) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pump();
 
-      // Enter wrong PIN 9999
       await tester.tap(find.text('9'));
       await tester.pump();
       await tester.tap(find.text('9'));
