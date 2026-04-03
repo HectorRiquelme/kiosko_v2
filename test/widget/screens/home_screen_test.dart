@@ -21,55 +21,53 @@ void main() {
 
     Widget buildTestWidget() {
       return ProviderScope(
-        overrides: [
-          databaseProvider.overrideWithValue(db),
-        ],
+        overrides: [databaseProvider.overrideWithValue(db)],
         child: const MaterialApp(home: HomeScreen()),
       );
     }
 
-    testWidgets('renders in portrait layout', (tester) async {
+    testWidgets('shows greeting and question', (tester) async {
       await mockNetworkImagesFor(() async {
-        tester.view.physicalSize = const Size(800, 1200);
+        tester.view.physicalSize = const Size(1600, 2400);
         tester.view.devicePixelRatio = 1.0;
 
         await tester.pumpWidget(buildTestWidget());
-        // Pump a few frames for async providers to resolve
         await tester.pump(const Duration(milliseconds: 500));
         await tester.pump(const Duration(milliseconds: 500));
 
-        expect(find.text('Kiosko'), findsOneWidget);
-        expect(find.text('Categorias'), findsOneWidget);
+        expect(find.text('Que vas a pedir hoy?'), findsOneWidget);
 
         tester.view.resetPhysicalSize();
         tester.view.resetDevicePixelRatio();
       });
     });
 
-    testWidgets('shows header with title', (tester) async {
+    testWidgets('shows category chips with Todos', (tester) async {
       await mockNetworkImagesFor(() async {
-        tester.view.physicalSize = const Size(800, 1200);
+        tester.view.physicalSize = const Size(1600, 2400);
         tester.view.devicePixelRatio = 1.0;
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pump(const Duration(milliseconds: 500));
         await tester.pump(const Duration(milliseconds: 500));
-        expect(find.text('Kiosko'), findsOneWidget);
+
+        expect(find.text('Todos'), findsOneWidget);
 
         tester.view.resetPhysicalSize();
         tester.view.resetDevicePixelRatio();
       });
     });
 
-    testWidgets('shows section titles', (tester) async {
+    testWidgets('shows hero banner', (tester) async {
       await mockNetworkImagesFor(() async {
-        tester.view.physicalSize = const Size(800, 2400);
+        tester.view.physicalSize = const Size(1600, 2400);
         tester.view.devicePixelRatio = 1.0;
 
         await tester.pumpWidget(buildTestWidget());
         await tester.pump(const Duration(milliseconds: 500));
         await tester.pump(const Duration(milliseconds: 500));
-        expect(find.text('Categorias'), findsOneWidget);
+
+        expect(find.text('Hasta 30% OFF'), findsOneWidget);
 
         tester.view.resetPhysicalSize();
         tester.view.resetDevicePixelRatio();
