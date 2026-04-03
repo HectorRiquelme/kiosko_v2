@@ -1,73 +1,32 @@
 # Kiosko POS v2
 
-Self-service kiosk application for food ordering, built with Flutter.
+Sistema POS de autoservicio para pedidos de comida. Diseñado para tablets, 100% offline.
 
-## Design System
+## Modos de uso
 
-Based on the **Quickbite** Figma design, featuring:
+| Modo | Acceso | Descripcion |
+|------|--------|-------------|
+| **Admin** | PIN 1234 | Gestionar productos, categorias, promos, usuarios, reportes, impresora, backup, LAN |
+| **Cocina** | PIN 0000 | Kanban de pedidos: Pendientes → Preparando → Listos |
+| **Kiosko** | Sin PIN | Cliente navega menu, personaliza productos, paga |
+| **Pedidos** | Sin PIN | Display publico de turnos (para TV) |
+| **Menu** | Sin PIN | Carrusel digital de productos y ofertas (pantalla detras del cajero) |
 
-- **Colors**: Orange primary (#FF9B17), dark/light variants, promo colors
-- **Typography**: Outfit + Poppins via Google Fonts
-- **Spacing**: Consistent 8px grid system
-- **Shadows**: Search bar, product card, and elevated variants
-
-## Architecture
-
-```
-lib/
-├── core/
-│   ├── theme/          # Design tokens (colors, typography, spacing, shadows)
-│   └── animations/     # Reusable animation system (curves, durations, widgets)
-├── presentation/
-│   ├── widgets/        # UI components (CategoryCard, ProductCard, PromoCard, etc.)
-│   └── screens/        # Screen layouts (HomeScreen with portrait/landscape)
-```
-
-## Components
-
-| Component | Size | Description |
-|-----------|------|-------------|
-| CategoryCard | 195x195 | Category selection with tap animation |
-| ProductCard | 260x240 | Product display with add-to-cart |
-| PromoCard | 453x195 | Promotional banner card |
-| HeroBanner | full x 377 | Main promotional banner |
-| KioskSearchBar | full x 125 | Search input with button |
-| CartBottomBar | full x 183 | Floating cart summary bar |
-
-## Features
-
-- Responsive layout (portrait + landscape)
-- Tap animations with scale effects
-- Fly-to-cart animation overlay
-- Staggered grid animations
-- CLP currency formatting ($X.XXX)
-- CachedNetworkImage with placeholders
-- Accessibility semantics
-
-## Getting Started
+## Quick Start
 
 ```bash
+git clone https://github.com/HectorRiquelme/kiosko_v2.git
+cd kiosko_v2
 flutter pub get
-flutter run
+dart run build_runner build --delete-conflicting-outputs
+flutter test    # 196 tests
+flutter run     # Ejecutar
 ```
-
-## Testing
-
-```bash
-flutter test              # Run all tests
-flutter test --coverage   # Run with coverage
-```
-
-## Test Results
-
-- 41 tests passing
-- 73.5% line coverage
-- 0 analysis issues
 
 ## Tech Stack
 
-- Flutter 3.41.6
-- Google Fonts (Outfit, Poppins)
-- CachedNetworkImage
-- intl (CLP formatting)
-- Riverpod-ready architecture
+Flutter 3.41 | Riverpod | Drift/SQLite | Google Fonts | Transbank POS | ESC/POS Printing
+
+## Documentacion completa
+
+Ver **[CLAUDE.md](CLAUDE.md)** — contiene arquitectura, esquema DB, flujos, estado de features, y TODOs pendientes. Ese archivo es la fuente de verdad para retomar el proyecto.

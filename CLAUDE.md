@@ -1,149 +1,235 @@
-# Kiosko POS v2 - Project Context
+# Kiosko POS v2 - Full Project Context
 
-## Quick Recovery
-If starting a new session, say: "continua con kiosko v2" and Claude will have full context from this file.
-
-### Auto-run mode
-When the user says **"ejecuta todas las fases"** or **"continua todas las fases"** or **"fases 2-7"**:
-1. Read this CLAUDE.md to recover context
-2. Execute ALL pending phases (2 through 7) sequentially without stopping
-3. For each phase: implement code, write tests, run `flutter test`, fix failures, run `flutter analyze`
-4. After ALL phases complete: commit + push to GitHub, update this CLAUDE.md marking completed phases
-5. Do NOT ask questions — use defaults, fix errors autonomously, skip if blocked after 3 attempts (leave TODO comment)
-6. Keep a running todo list to track progress across phases
+> **Para retomar este proyecto en cualquier herramienta (Claude Code, OpenCode, Codex, Cursor, otro PC):**
+> Lee este archivo completo. Contiene TODO el contexto necesario.
 
 ## Project Overview
-Self-service kiosk POS for food ordering (cafeteria, restaurant, etc.). Based on Figma "Quickbite Kiosk UI/UX" design. Must work on tablets (portrait + landscape), fully offline via LAN.
+Self-service kiosk POS for food ordering (cafeteria, restaurant, etc.). Based on Figma "Quickbite Kiosk UI/UX" design. Works on tablets (portrait + landscape), fully offline via LAN.
 
-**Repo:** https://github.com/HectorRiquelme/kiosko_v2
-**Tech:** Flutter 3.41.6 | Riverpod | Drift/SQLite | Google Fonts (Outfit, Poppins)
+- **Repo:** https://github.com/HectorRiquelme/kiosko_v2
+- **Figma:** https://www.figma.com/design/io500FRrfpJbvshdnotfF4/kiosk-UI-UX-case-study
+- **Tech:** Flutter 3.41.6 | Riverpod 2.6.1 | Drift/SQLite (schema v4) | Google Fonts (Outfit, Poppins)
+- **Tests:** 196 passing | 0 analysis issues
+- **Target:** Android tablets (primary), Web (secondary)
 
 ## Conventions
 - **Currency:** CLP (pesos chilenos), format `$3.500`, stored as `int` cents (350000 = $3.500)
 - **UI language:** Spanish
 - **Code language:** English
-- **User mode:** Autonomous — execute without asking, fix errors, use defaults
-- **Tests:** Run after each component. Target >80% coverage
-- **Commit style:** Descriptive message + Co-Authored-By Claude
+- **PIN hashing:** SHA-256 + salt via `lib/core/utils/pin_hasher.dart`
+- **DB:** Drift with conditional imports (native FFI for Android, WASM for web)
+- **Images:** `SmartImage` widget handles `asset:`, file paths, and HTTP URLs
 
-## What's DONE
+## App Flow
+```
+LoginScreen (PIN numpad)
+├── PIN 1234 → AdminPanelScreen
+│   ├── Gestion de productos (CRUD + images)
+│   ├── Gestion de categorias (drag-to-reorder)
+│   ├── Gestion de ofertas (promos with discounts)
+│   ├── Historial de pedidos
+│   ├── Gestion de usuarios (CRUD + PIN validation)
+│   ├── Registro de actividad (audit log)
+│   ├── Reporte de ventas (daily/weekly/monthly)
+│   ├── Configurar impresora (Bluetooth/USB thermal)
+│   ├── Backup / Restaurar (DB export/import)
+│   └── Sincronizacion LAN (multi-tablet)
+├── PIN 0000 → KitchenScreen (Kanban: Pendientes → Preparando → Listos)
+├── "Kiosko" → HomeScreen → Cart → Checkout → Payment → Success
+├── "Pedidos" → OrderDisplayScreen (public queue board)
+└── "Menu" → MenuBoardScreen (digital signage carousel)
+```
 
-### Phase 1 — UI Layer ✓
-- Theme system: `lib/core/theme/` (colors, typography, spacing, shadows, theme)
-- Animation system: `lib/core/animations/` (curves, durations, scale_on_tap, fly_to_cart, staggered_grid, animated_counter)
-- Components: `lib/presentation/widgets/` (category_card, product_card, promo_card, hero_banner, kiosk_search_bar, cart_bottom_bar)
-- HomeScreen: Responsive portrait/landscape, breakpoint 900px
+## Architecture (Clean Architecture)
+```
+lib/
+├── core/
+│   ├── animations/          # Curves, durations, scale_on_tap, fly_to_cart, staggered_grid, animated_counter
+│   ├── theme/               # Colors, typography, spacing, shadows, theme, responsive
+│   └── utils/               # PinHasher (SHA-256)
+├── data/
+│   ├── datasources/
+│   │   ├── app_database.dart       # Drift DB: 9 tables, schema v4, seed data
+│   │   ├── app_database.g.dart     # Generated (dart run build_runner build)
+│   │   └── connection/             # Conditional: native.dart, web.dart, unsupported.dart
+│   ├── models/
+│   │   └── db_mappers.dart         # Entity ↔ DB conversion
+│   ├── repositories/
+│   │   ├── audit_log_repository.dart
+│   │   ├── auth_repository_impl.dart    # PIN hashing + migration from plaintext
+│   │   ├── cart_repository_impl.dart    # In-memory, uses cartKey for modifier support
+│   │   ├── modifier_repository.dart
+│   │   ├── order_repository_impl.dart   # Atomic queue numbers in transaction
+│   │   ├── product_repository_impl.dart # SQL injection safe (LIKE escaping)
+│   │   ├── promo_repository_impl.dart
+│   │   └── sales_report_repository.dart # Daily/weekly/monthly aggregations
+│   ├── services/
+│   │   ├── audit_logger.dart            # Convenience logger from providers
+│   │   ├── backup_service.dart          # DB file copy/restore
+│   │   ├── lan_sync_service.dart        # HTTP server on port 8090
+│   │   ├── receipt_printer.dart         # Text receipt generation
+│   │   ├── session_manager.dart         # SharedPreferences session
+│   │   ├── thermal_printer_service.dart # ESC/POS byte generation
+│   │   └── transbank/
+│   │       └── transbank_service.dart   # MethodChannel to Android native
+│   └── sync/
+│       └── offline_sync_queue.dart      # Queue with retry logic
+├── domain/
+│   ├── entities/
+│   │   ├── audit_log_entry.dart   # AuditAction enum, AuditEntityType enum
+│   │   ├── cart.dart              # totalInCents, totalItems, containsProduct, quantityOf
+│   │   ├── cart_item.dart         # cartKey = product+modifiers, modifiersLabel
+│   │   ├── category.dart
+│   │   ├── modifier.dart          # ProductModifierOption, SelectedModifier, ModifierGroup
+│   │   ├── order.dart             # OrderStatus, PaymentMethod enums
+│   │   ├── product.dart
+│   │   ├── promo.dart             # isCurrentlyActive, calculateDiscount
+│   │   └── user.dart              # AppUser, UserRole enum
+│   ├── repositories/              # Abstract interfaces
+│   │   ├── auth_repository.dart   # isPinAvailable for uniqueness
+│   │   ├── cart_repository.dart   # Uses cartKey, supports modifiers
+│   │   ├── order_repository.dart
+│   │   ├── product_repository.dart # Full CRUD + toggleAvailability
+│   │   └── promo_repository.dart
+│   └── usecases/
+│       ├── add_to_cart.dart
+│       ├── calculate_total.dart
+│       ├── place_order.dart       # Validates cart not empty, clears after
+│       └── remove_from_cart.dart
+├── l10n/
+│   └── app_strings.dart           # Centralized Spanish strings
+├── main.dart                      # ProviderScope → LoginScreen
+└── presentation/
+    ├── providers/
+    │   ├── auth_provider.dart         # AuthNotifier + session restore
+    │   ├── cart_provider.dart         # CartNotifier with modifier support
+    │   ├── categories_provider.dart
+    │   ├── database_provider.dart     # All repository providers
+    │   ├── order_provider.dart        # Audit logs on sale
+    │   └── products_provider.dart     # Search + category filter
+    ├── screens/
+    │   ├── admin/
+    │   │   ├── admin_panel_screen.dart
+    │   │   ├── audit_log_screen.dart
+    │   │   ├── backup_screen.dart
+    │   │   ├── category_management_screen.dart
+    │   │   ├── lan_sync_screen.dart
+    │   │   ├── printer_settings_screen.dart
+    │   │   ├── product_form_screen.dart
+    │   │   ├── product_list_screen.dart
+    │   │   ├── promo_management_screen.dart
+    │   │   ├── sales_report_screen.dart
+    │   │   └── user_management_screen.dart
+    │   ├── kitchen/
+    │   │   └── kitchen_screen.dart     # 3-column Kanban, auto-refresh 5s, haptic+sound
+    │   ├── cart_screen.dart
+    │   ├── category_screen.dart
+    │   ├── checkout_screen.dart
+    │   ├── home_screen.dart            # Responsive portrait/landscape, modifier dialog
+    │   ├── login_screen.dart           # PIN numpad, session restore, kiosk/menu/display modes
+    │   ├── menu_board_screen.dart      # Auto-rotating carousel, paginated slides
+    │   ├── order_display_screen.dart   # Public queue board, pulse animation
+    │   ├── payment_screen.dart         # Transbank card, cash ticket, confirmation dialog
+    │   └── success_screen.dart         # Cash ticket widget, Transbank auth display
+    └── widgets/
+        ├── cart_bottom_bar.dart
+        ├── cash_ticket.dart            # Visual receipt for cash payments
+        ├── category_card.dart
+        ├── hero_banner.dart
+        ├── kiosk_search_bar.dart
+        ├── modifier_dialog.dart        # Grouped ChoiceChips with live price
+        ├── product_card.dart
+        ├── promo_card.dart
+        └── smart_image.dart            # Handles asset:/file/http images
+```
 
-### Phase 2 — Domain Layer ✓
-- `lib/domain/entities/` — Product, Category, CartItem, Cart, Order (with OrderStatus, PaymentMethod enums)
-- `lib/domain/repositories/` — ProductRepository, CartRepository, OrderRepository (abstracts)
-- `lib/domain/usecases/` — AddToCart, RemoveFromCart, CalculateTotal, PlaceOrder
+## Database Schema (v4)
+| Table | Key Fields |
+|-------|-----------|
+| Users | id, name, pin (SHA-256 hashed), role (admin/worker) |
+| Categories | id, name, imageUrl, sortOrder |
+| Products | id, name, imageUrl, priceInCents, categoryId, description, available |
+| ProductModifiers | id, productId, group, name, priceAdjustCents, sortOrder, isDefault |
+| Promos | id, title, subtitle, backgroundColor, discountPercent, discountAmountCents, productIds, startDate, endDate, active |
+| Orders | id, totalInCents, status, paymentMethod, queueNumber, createdAt |
+| OrderItems | id, orderId, productId, quantity, priceInCents |
+| OrderItemModifiers | id, orderItemId, modifierName, modifierGroup, priceAdjustCents |
+| AuditLogs | id, userId, userName, action, targetType, targetId, targetName, details, createdAt |
 
-### Phase 3 — Data Layer ✓
-- `lib/data/datasources/app_database.dart` — Drift/SQLite with Categories, Products, Orders, OrderItems tables + seed data
-- `lib/data/repositories/` — ProductRepositoryImpl, CartRepositoryImpl, OrderRepositoryImpl
-- `lib/data/models/db_mappers.dart` — Entity ↔ DB model conversion
+## Seed Data (created on fresh install)
+- **Users:** admin1 (PIN 1234), worker1 (PIN 0000)
+- **Categories:** Cafe, Bebidas, Pasteles, Snacks, Combos
+- **Products:** 19 total with local asset images and descriptions
+- **Modifiers:** Sizes (S/M/L), Milk (Normal/Descremada/Soya/Almendra), Extras (Shot/Crema/Caramelo), Sugar (Normal/Sin/Stevia) — for coffee/beverage products
+- **Promos:** 4 active (Happy Hour 30%, 2x1 Pasteles, Combo Desayuno -$1000, Chai 20%)
+- **Orders:** 4 demo (2 pending, 1 preparing, 1 ready)
+- **Audit Logs:** 7 demo entries
 
-### Phase 4 — State Management (Riverpod) ✓
-- `lib/presentation/providers/` — databaseProvider, productRepositoryProvider, cartRepositoryProvider, orderRepositoryProvider
-- categoriesProvider, productsProvider (with search + category filter), cartProvider (StateNotifier), orderProvider
-- HomeScreen connected to real data via providers, mock data removed
+## Android Native Code
+`android/app/src/main/kotlin/com/kiosko/kiosko_v2/MainActivity.kt`:
+- **Transbank channel** (`com.kiosko.transbank`): processPayment, isAvailable, getLastTransaction
+- **Printer channel** (`com.kiosko.printer`): discoverPrinters, printRaw (stubs, need real implementation)
 
-### Phase 5 — Additional Screens ✓
-- `category_screen.dart` — Products filtered by category with grid
-- `cart_screen.dart` — Full cart review with +/- controls, total, pay button
-- `checkout_screen.dart` — Order summary + payment method selection (cash/card/transfer)
-- `payment_screen.dart` — Payment processing with confirmation
-- `success_screen.dart` — Order confirmation with queue number display
+## Security
+- PINs hashed with SHA-256 + salt (auto-migrates plaintext PINs on first login)
+- SQL injection prevention in product search (LIKE character escaping)
+- Queue numbers assigned atomically inside DB transaction
+- Failed login attempts logged to audit system
+- PINs hidden in admin UI (shows ****)
+- Payment flow: double-tap prevention, PopScope blocks back during processing, empty cart guard
 
-### Phase 6 — Integration & QA ✓
-- Integration tests: complete order flow, search, cart management, queue numbers, order status updates
-- Widget tests for all screens (home, cart, checkout, category, payment, success)
-- Provider tests (CartProvider)
-- 128 tests total, 80% source coverage (excluding generated Drift code)
-- `flutter analyze` — 0 issues
-
-### Phase 7 — Polish ✓
-- `lib/l10n/app_strings.dart` — Centralized Spanish strings for i18n readiness
-- `lib/data/sync/offline_sync_queue.dart` — Queue with retry logic (max 3 retries)
-- `lib/presentation/screens/admin/admin_panel_screen.dart` — Admin panel with product management, order history, printer config
-- `lib/data/services/receipt_printer.dart` — Receipt generation + print placeholder
-
-### Phase A — Auth + Roles ✓
-- `lib/domain/entities/user.dart` — AppUser entity with UserRole enum (admin/worker)
-- `lib/data/repositories/auth_repository_impl.dart` — PIN authentication via Drift DB
-- `lib/presentation/providers/auth_provider.dart` — AuthNotifier with login/logout
-- `lib/presentation/screens/login_screen.dart` — PIN numpad, kiosk mode bypass
-- Users table with seed data: admin (PIN 1234), worker (PIN 0000)
-
-### Phase B — CRUD Products + Images ✓
-- `lib/presentation/screens/admin/product_list_screen.dart` — Product listing with availability toggle, edit, delete
-- `lib/presentation/screens/admin/product_form_screen.dart` — Create/edit product with image picker, price, category
-- `lib/presentation/screens/admin/category_management_screen.dart` — Category CRUD with drag-to-reorder
-- image_picker integration for local image storage
-
-### Phase C — Offers/Promos ✓
-- `lib/domain/entities/promo.dart` — Promo entity with % and fixed discounts, date range validation
-- `lib/data/repositories/promo_repository_impl.dart` — Promo CRUD via Drift
-- `lib/presentation/screens/admin/promo_management_screen.dart` — Full promo management UI
-- Promos table in Drift DB
-
-### Phase D — Kitchen Screen ✓
-- `lib/presentation/screens/kitchen/kitchen_screen.dart` — Three-column Kanban board
-- Columns: Pendientes → Preparando → Listos (with count badges)
-- Auto-refresh every 5 seconds for new orders
-- One-tap status progression, order details with items + queue number
-
-### Phase E — Order Display Screen ✓
-- `lib/presentation/screens/order_display_screen.dart` — Public-facing queue board for TV/secondary display
-- Two columns: Preparando | Listos para retirar
-- Large queue number badges with pulse animation for ready orders
-- Auto-refresh every 3 seconds, dark background for visibility
-
-### Production Polish ✓
-1. **Kitchen notifications** — Haptic + 880Hz beep on new orders (`assets/sounds/new_order.mp3`)
-2. **Daily queue reset** — Queue number resets to 1 each day (SQL date filter)
-3. **Session persistence** — SharedPreferences saves/restores login across app restarts
-4. **Unique PIN validation** — `isPinAvailable()` prevents duplicate PINs
-5. **Payment confirmation** — Dialog before processing payment
-6. **User management** — `admin/user_management_screen.dart` with full CRUD + role assignment
-
-### Audit Log System ✓
-- `AuditLogs` table in Drift DB (schema v3)
-- `AuditLogRepository` — queries by entity type, user, date range, sales only
-- `AuditLogger` convenience class for logging from providers
-- `admin/audit_log_screen.dart` — Color-coded log viewer (green=create, orange=edit, red=delete, blue=sale)
-- Sales auto-logged with amount, payment method, item count
-
-### Transbank POS Integration ✓
-- `lib/data/services/transbank/transbank_service.dart` — MethodChannel to native Android
-- `MainActivity.kt` — Launches Transbank intent (`cl.transbank.pos.ACTION_SALE`)
-- Card payments routed through terminal: "Esperando pago en terminal..."
-- Handles approved/rejected/cancelled/error responses
-- Simulated payments on non-Android for development
-- SuccessScreen shows card last 4 digits + auth code
-
-### Final Stats
-- **180 tests** — all passing
-- **0 analysis issues**
-- **Architecture:** Clean Architecture (domain/data/presentation layers)
-- **DB schema:** v3 (Users, Categories, Products, Promos, Orders, OrderItems, AuditLogs)
-- **Auth:** PIN-based with admin/worker roles + session persistence
-- **Payments:** Cash, Transbank POS (card), Transfer
-- **App flow:** Login → (Admin Panel | Kitchen | Kiosk | Order Display)
-
-## Key Design Specs (from Figma)
-- Primary: #FF9B17 | PrimaryDark: #FF4D03
-- PromoRed: #AC0E02 | PromoBrown: #A33310
-- Fonts: Outfit (general), Poppins (promos)
-- Border radius: 22(pills), 25(cards), 35(inputs/banners), 37(CTAs)
-- Component sizes: Category 195x195, Product 260x240, Promo 453x195, Banner fullx377, SearchBar fullx125, CartBar fullx183
+## Design Specs
+- **Primary:** #FF9B17 | **PrimaryDark:** #FF4D03
+- **Warm backgrounds:** #FFF8F0 (backgroundWarm), #FAF6F1 (backgroundCream)
+- **Fonts:** Outfit (general), Poppins (promos)
+- **Gradient headers:** LinearGradient(#FF9B17 → #FF7B00)
 
 ## Commands
 ```bash
-flutter test                    # Run all 180 tests
-flutter test --coverage         # With coverage report
-flutter analyze                 # Static analysis
-flutter run                     # Run app
-dart run build_runner build     # Regenerate Drift code
+flutter test                          # Run all 196 tests
+flutter test --coverage               # With coverage report
+flutter analyze                       # Static analysis (must be 0 issues)
+flutter run -d <device>               # Run on device
+flutter build apk --debug             # Build debug APK
+dart run build_runner build --delete-conflicting-outputs  # Regenerate Drift code
 ```
+
+## Environment Notes
+- **Java:** Required for Android builds. On macOS: `export JAVA_HOME=/opt/homebrew/opt/openjdk@17`
+- **ADB path:** `$HOME/Library/Android/sdk/platform-tools`
+- **Web:** Needs sqlite3.wasm + drift_worker.dart.js in web/ folder
+- **Fresh install:** Use `adb uninstall com.kiosko.kiosko_v2` before install to reset DB seeds
+
+## What's DONE ✓
+1. UI Layer — Theme, animations, 9 widgets, responsive HomeScreen
+2. Domain Layer — 9 entities, 5 repositories, 4 use cases
+3. Data Layer — Drift/SQLite v4, 9 tables, 7 repository implementations, mappers
+4. State Management — Riverpod providers for all data flows
+5. Screens — Home, Cart, Checkout, Payment, Success, Category, Login, Kitchen, OrderDisplay, MenuBoard
+6. Admin Panel — 10 management screens (products, categories, promos, users, orders, audit, reports, printer, backup, LAN sync)
+7. Auth — PIN-based with SHA-256 hashing, session persistence, role-based routing
+8. Payments — Cash (with visual ticket), Transbank POS (card), Transfer
+9. Kitchen — 3-column Kanban, haptic+sound notifications, auto-refresh
+10. Menu Board — Auto-rotating digital signage with paginated slides
+11. Order Display — Public queue board with pulse animations
+12. Product Modifiers — Sizes, milk, extras, sugar with price adjustments
+13. Audit Logging — All CRUD + sales + login attempts
+14. Sales Reports — Daily/weekly/monthly with top products and payment breakdown
+15. Thermal Printing — ESC/POS protocol, Bluetooth/USB discovery
+16. Backup/Restore — DB file copy with safety backup
+17. LAN Sync — HTTP server for multi-tablet order synchronization
+18. Security Audit — Hashed PINs, SQL injection fix, atomic transactions, failed login tracking
+
+## What's PENDING / TODO
+- [ ] **Release build** — Signed APK for production deployment
+- [ ] **Auto-timeout kiosk** — Return to home after 60s inactivity
+- [ ] **Real product images** — Export transparent PNGs from Figma (current: Unsplash photos)
+- [ ] **Bluetooth printer native code** — Complete discovery/print in MainActivity.kt
+- [ ] **LAN sync integration** — Wire LanSyncService into order providers
+- [ ] **Multiple extras selection** — Currently one per group; change Extras to multi-select
+- [ ] **Inventory/stock management** — Track quantities, low stock alerts
+- [ ] **Customer loyalty** — Points, rewards, frequent buyer discounts
+- [ ] **i18n with .arb files** — Currently hardcoded Spanish, prepare for English
+- [ ] **End-to-end testing on tablet** — Full order flow, kitchen, display
+- [ ] **Performance optimization** — Profile scroll, reduce rebuilds
+- [ ] **App icon and splash screen** — Branded launch experience
