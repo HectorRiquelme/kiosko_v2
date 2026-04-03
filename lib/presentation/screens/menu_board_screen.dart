@@ -177,23 +177,53 @@ class _MenuBoardScreenState extends ConsumerState<MenuBoardScreen> {
     List<Promo> promos,
   ) {
     final slides = <Widget>[];
+    const maxProductsPerSlide = 4; // max items that fit on screen without scroll
+    const maxMenuItemsPerSlide = 10; // for full menu list view
 
     // Slide 1: Promos highlight (if any)
     if (promos.isNotEmpty) {
       slides.add(_buildPromosSlide(promos));
     }
 
-    // Slides per category
+    // Slides per category — paginate if too many products
     for (final cat in categories) {
       final products =
           allProducts.where((p) => p.categoryId == cat.id).toList();
-      if (products.isNotEmpty) {
+      if (products.isEmpty) continue;
+
+      if (products.length <= maxProductsPerSlide) {
         slides.add(_buildCategorySlide(cat, products));
+      } else {
+        // Split into pages
+        for (int i = 0; i < products.length; i += maxProductsPerSlide) {
+          final end = (i + maxProductsPerSlide).clamp(0, products.length);
+          final page = products.sublist(i, end);
+          final pageNum = (i ~/ maxProductsPerSlide) + 1;
+          final totalPages =
+              (products.length / maxProductsPerSlide).ceil();
+          slides.add(_buildCategorySlide(cat, page,
+              pageLabel: totalPages > 1 ? '$pageNum/$totalPages' : null));
+        }
       }
     }
 
-    // Slide: Full menu overview
-    slides.add(_buildFullMenuSlide(categories, allProducts));
+    // Full menu — paginated
+    final allItems = <_MenuItem>[];
+    for (final cat in categories) {
+      final products =
+          allProducts.where((p) => p.categoryId == cat.id).toList();
+      for (final p in products) {
+        allItems.add(_MenuItem(categoryName: cat.name, product: p));
+      }
+    }
+    for (int i = 0; i < allItems.length; i += maxMenuItemsPerSlide) {
+      final end = (i + maxMenuItemsPerSlide).clamp(0, allItems.length);
+      final page = allItems.sublist(i, end);
+      final pageNum = (i ~/ maxMenuItemsPerSlide) + 1;
+      final totalPages = (allItems.length / maxMenuItemsPerSlide).ceil();
+      slides.add(_buildFullMenuPage(page,
+          pageLabel: totalPages > 1 ? '$pageNum/$totalPages' : null));
+    }
 
     _totalPages = slides.length;
 
@@ -277,7 +307,8 @@ class _MenuBoardScreenState extends ConsumerState<MenuBoardScreen> {
   }
 
   Widget _buildCategorySlide(
-      domain_cat.Category category, List<domain.Product> products) {
+      domain_cat.Category category, List<domain.Product> products,
+      {String? pageLabel}) {
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.paddingM),
       child: Column(
@@ -291,88 +322,94 @@ class _MenuBoardScreenState extends ConsumerState<MenuBoardScreen> {
               color: AppColors.primary,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Text(category.name.toUpperCase(),
-                style: AppTypography.headline2.copyWith(
-                    color: AppColors.textOnPrimary, fontSize: 22),
-                textAlign: TextAlign.center),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(category.name.toUpperCase(),
+                    style: AppTypography.headline2.copyWith(
+                        color: AppColors.textOnPrimary, fontSize: 22)),
+                if (pageLabel != null) ...[
+                  const SizedBox(width: 8),
+                  Text(pageLabel,
+                      style: AppTypography.bodyMedium.copyWith(
+                          color: AppColors.textOnPrimary.withValues(alpha: 0.7),
+                          fontSize: 14)),
+                ],
+              ],
+            ),
           ),
           const SizedBox(height: AppSpacing.gapM),
-          // Products grid
+          // Products — no scroll, fits on screen
           Expanded(
-            child: GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: products.length <= 4 ? 2 : 3,
-                childAspectRatio: 1.8,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-              ),
-              itemCount: products.length,
-              itemBuilder: (_, i) {
+            child: Column(
+              children: List.generate(products.length, (i) {
                 final p = products[i];
-                return Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.backgroundWhite,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.shadow.withValues(alpha: 0.08),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      // Product image
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: SizedBox(
-                          width: 60,
-                          height: 60,
-                          child: p.imageUrl.startsWith('asset:')
-                              ? Image.asset(p.imageUrl.substring(6),
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, _, _) => const Icon(
-                                      Icons.fastfood,
-                                      color: AppColors.textSecondary))
-                              : const Icon(Icons.fastfood,
-                                  color: AppColors.textSecondary),
+                return Expanded(
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.backgroundWhite,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.shadow.withValues(alpha: 0.08),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(p.name,
-                                style: AppTypography.bodyMedium.copyWith(
-                                    color: AppColors.textPrimary,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 15),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis),
-                            if (p.description != null)
-                              Text(p.description!,
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: SizedBox(
+                            width: 60,
+                            height: 60,
+                            child: p.imageUrl.startsWith('asset:')
+                                ? Image.asset(p.imageUrl.substring(6),
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, _, _) => const Icon(
+                                        Icons.fastfood,
+                                        color: AppColors.textSecondary))
+                                : const Icon(Icons.fastfood,
+                                    color: AppColors.textSecondary),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(p.name,
                                   style: AppTypography.bodyMedium.copyWith(
-                                      color: AppColors.textSecondary,
-                                      fontSize: 11),
+                                      color: AppColors.textPrimary,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 15),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis),
-                            const SizedBox(height: 4),
-                            Text(formatPrice(p.priceInCents),
-                                style: AppTypography.bodyMedium.copyWith(
-                                    color: AppColors.primary,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 16)),
-                          ],
+                              if (p.description != null)
+                                Text(p.description!,
+                                    style: AppTypography.bodyMedium.copyWith(
+                                        color: AppColors.textSecondary,
+                                        fontSize: 11),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis),
+                              const SizedBox(height: 4),
+                              Text(formatPrice(p.priceInCents),
+                                  style: AppTypography.bodyMedium.copyWith(
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 16)),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 );
-              },
+              }),
             ),
           ),
         ],
@@ -380,74 +417,76 @@ class _MenuBoardScreenState extends ConsumerState<MenuBoardScreen> {
     );
   }
 
-  Widget _buildFullMenuSlide(
-      List<domain_cat.Category> categories, List<domain.Product> allProducts) {
+  Widget _buildFullMenuPage(List<_MenuItem> items, {String? pageLabel}) {
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.paddingM),
       child: Column(
         children: [
-          Text('MENU COMPLETO',
-              style: AppTypography.headline2.copyWith(
-                color: AppColors.primary,
-                fontSize: 24,
-              )),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('MENU COMPLETO',
+                  style: AppTypography.headline2.copyWith(
+                    color: AppColors.primary,
+                    fontSize: 22,
+                  )),
+              if (pageLabel != null) ...[
+                const SizedBox(width: 8),
+                Text(pageLabel,
+                    style: AppTypography.bodyMedium.copyWith(
+                        color: AppColors.textSecondary, fontSize: 14)),
+              ],
+            ],
+          ),
           const SizedBox(height: AppSpacing.gapS),
+          // Items — no scroll
           Expanded(
-            child: ListView.builder(
-              itemCount: categories.length,
-              itemBuilder: (_, catIdx) {
-                final cat = categories[catIdx];
-                final products =
-                    allProducts.where((p) => p.categoryId == cat.id).toList();
-                if (products.isEmpty) return const SizedBox();
-
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      margin: const EdgeInsets.only(bottom: 4),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(4),
+            child: Column(
+              children: items.map((item) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 3),
+                  child: Row(
+                    children: [
+                      // Category badge
+                      Container(
+                        width: 70,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 4, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(item.categoryName,
+                            style: AppTypography.bodyMedium.copyWith(
+                                fontSize: 10,
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w600),
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis),
                       ),
-                      child: Text(cat.name.toUpperCase(),
+                      const SizedBox(width: 8),
+                      Expanded(
+                          child: Text(item.product.name,
+                              style: AppTypography.bodyMedium.copyWith(
+                                  color: AppColors.textPrimary,
+                                  fontSize: 13))),
+                      Expanded(
+                        child: Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                            height: 1,
+                            color: AppColors.textSecondary
+                                .withValues(alpha: 0.15)),
+                      ),
+                      Text(formatPrice(item.product.priceInCents),
                           style: AppTypography.bodyMedium.copyWith(
-                              color: AppColors.textOnPrimary,
+                              color: AppColors.primary,
                               fontWeight: FontWeight.w700,
                               fontSize: 13)),
-                    ),
-                    ...products.map((p) => Padding(
-                          padding: const EdgeInsets.only(bottom: 2),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                  child: Text(p.name,
-                                      style: AppTypography.bodyMedium.copyWith(
-                                          color: AppColors.textPrimary,
-                                          fontSize: 13))),
-                              Expanded(
-                                child: Container(
-                                    margin:
-                                        const EdgeInsets.symmetric(horizontal: 6),
-                                    height: 1,
-                                    color: AppColors.textSecondary
-                                        .withValues(alpha: 0.2)),
-                              ),
-                              Text(formatPrice(p.priceInCents),
-                                  style: AppTypography.bodyMedium.copyWith(
-                                      color: AppColors.primary,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 13)),
-                            ],
-                          ),
-                        )),
-                    const SizedBox(height: 8),
-                  ],
+                    ],
+                  ),
                 );
-              },
+              }).toList(),
             ),
           ),
         ],
@@ -468,4 +507,10 @@ class _MenuBoardScreenState extends ConsumerState<MenuBoardScreen> {
       return AppColors.promoRed;
     }
   }
+}
+
+class _MenuItem {
+  final String categoryName;
+  final domain.Product product;
+  const _MenuItem({required this.categoryName, required this.product});
 }
