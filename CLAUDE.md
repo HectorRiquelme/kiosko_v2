@@ -9,8 +9,10 @@ Self-service kiosk POS for food ordering (cafeteria, restaurant, etc.). Based on
 - **Repo:** https://github.com/HectorRiquelme/kiosko_v2
 - **Figma:** https://www.figma.com/design/io500FRrfpJbvshdnotfF4/kiosk-UI-UX-case-study
 - **Tech:** Flutter 3.41.6 | Riverpod 2.6.1 | Drift/SQLite (schema v4) | Google Fonts (Outfit, Poppins)
-- **Tests:** 196 passing | 0 analysis issues
+- **Tests:** 195 passing | 0 analysis issues
 - **Target:** Android tablets (primary), Web (secondary)
+- **Files:** 91 source files | 39 test files
+- **Tablet:** MNP1095 device ID XCD1101AC825207271 (1920x1200)
 
 ## Conventions
 - **Currency:** CLP (pesos chilenos), format `$3.500`, stored as `int` cents (350000 = $3.500)
@@ -184,9 +186,23 @@ lib/
 - **Fonts:** Outfit (general), Poppins (promos)
 - **Gradient headers:** LinearGradient(#FF9B17 → #FF7B00)
 
+## Auto-run mode (for Claude Code / tmux)
+When the user says **"ejecuta todas las fases"** or **"continua con los TODOs"**:
+1. Read this CLAUDE.md to recover context
+2. Execute ALL pending TODOs sequentially without stopping
+3. For each TODO: implement, write tests, run `flutter test`, fix failures, run `flutter analyze`
+4. After ALL complete: commit + push to GitHub, update this file
+5. Do NOT ask questions — use defaults, fix errors autonomously
+6. If blocked after 3 attempts, leave a TODO comment and continue
+
+### Quick resume prompt:
+```
+cd ~/trabajo/kiosko_v2 && claude "continua con los TODOs pendientes del CLAUDE.md sin detenerte"
+```
+
 ## Commands
 ```bash
-flutter test                          # Run all 196 tests
+flutter test                          # Run all 195 tests
 flutter test --coverage               # With coverage report
 flutter analyze                       # Static analysis (must be 0 issues)
 flutter run -d <device>               # Run on device
@@ -233,3 +249,12 @@ dart run build_runner build --delete-conflicting-outputs  # Regenerate Drift cod
 - [ ] **End-to-end testing on tablet** — Full order flow, kitchen, display
 - [ ] **Performance optimization** — Profile scroll, reduce rebuilds
 - [ ] **App icon and splash screen** — Branded launch experience
+
+## Conventions (for AI assistants)
+- **Currency:** CLP (pesos chilenos), format `$3.500`, stored as `int` cents (350000 = $3.500)
+- **UI language:** Spanish
+- **Code language:** English
+- **Mode:** Autonomous — execute without asking, fix errors, use defaults
+- **After changes:** Run `flutter test` + `flutter analyze` before committing
+- **Commit style:** Descriptive message + ` Opus 4.6 (1M context) <noreply@anthropic.com>`
+- **If blocked 3 times:** Comment with TODO and continue
